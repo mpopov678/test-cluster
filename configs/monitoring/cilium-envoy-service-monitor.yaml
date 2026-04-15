@@ -1,0 +1,22 @@
+# https://github.com/cilium/cilium/tree/main/install/kubernetes/cilium/templates
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cilium-envoy-servicemonitor
+  namespace: monitoring
+  labels:
+  annotations:
+spec:
+  selector:
+    matchLabels:
+      k8s-app: cilium-envoy
+  namespaceSelector:
+    matchNames:
+    - monitoring
+  endpoints:
+  - port: envoy-metrics
+    interval: 10
+    honorLabels: true
+    path: /metrics
+  targetLabels:
+  - k8s-app

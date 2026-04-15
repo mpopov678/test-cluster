@@ -1,0 +1,21 @@
+# https://github.com/cilium/cilium/tree/main/install/kubernetes/cilium/templates
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cilium-agent-servicemonitor
+  namespace: monitoring
+  labels:
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cilium-agent
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  endpoints:
+  - port: metrics
+    interval: 10
+    honorLabels: true
+    path: /metrics
+  targetLabels:
+  - k8s-app
