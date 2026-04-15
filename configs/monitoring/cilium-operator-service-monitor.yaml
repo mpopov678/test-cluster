@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: cilium-operator
+    app.kubernetes.io/part-of: cilium
+  name: cilium-operator
+  namespace: monitoring
+spec:
+  endpoints:
+  - honorLabels: true
+    interval: 10s
+    path: /metrics
+    port: metrics
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      io.cilium/app: operator
+      name: cilium-operator
+  targetLabels:
+  - io.cilium/app
