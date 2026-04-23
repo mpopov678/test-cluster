@@ -124,3 +124,45 @@ spec:
       - name: Content-Type
         type: RegularExpression
         value: ^application/grpc.*$
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: gateway-api-test-broker-10
+  namespace: kafka
+spec:
+  hostnames:
+  - broker-10.strimzi.local
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+    namespace: networking
+    sectionName: kafka-listener
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: gateway-api-test-broker-obiwan-10
+      port: 9095
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: gateway-api-test-bootstrap
+  namespace: kafka
+spec:
+  hostnames:
+  - bootstrap.strimzi.local
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+    namespace: networking
+    sectionName: kafka-listener
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: gateway-api-test-kafka-obiwan-bootstrap
+      port: 9095

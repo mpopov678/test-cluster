@@ -1,0 +1,80 @@
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+# this name will be heavily referenced as a label in later configs for strimzi
+  name: k8s-kfk 
+  namespace: kafka
+  annotations:
+    strimzi.io/kraft: enabled
+    strimzi.io/node-pools: enabled
+spec:
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+  kafka:
+    authorization:
+      type: simple
+    config: 
+    # this has to be specified because we are only using one broker
+    # kafka defaults to multiple replicas which messes with producer/consumer
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      default.replication.factor: 1
+    listeners:
+    - authentication:
+        type: scram-sha-512
+      configuration:
+        brokerCertChainAndKey:
+          certificate: tls.crt
+          key: tls.key
+          secretName: kafka-cert
+        brokers:
+        - advertisedHost: broker-10.strimzi.local
+          advertisedPort: 9095
+          broker: 10
+        createBootstrapService: true
+# name of the service, strimzi will create backend services using this value
+      name: external
+      port: 9095
+      tls: true
+      type: cluster-ip
+    version: 4.1.0
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  annotations:
+# specify to start broker node ids from 10, controller have 0-9
+    strimzi.io/next-node-ids: '[10-100]' 
+  labels:
+# this label is assigned the metadata.name of Kafka resource, it is used by strimzi
+    strimzi.io/cluster: k8s-kfk
+  name: broker
+  namespace: kafka
+spec:
+  replicas: 1
+  roles:
+  - broker
+  storage:
+    class: sc1 # specified storageclass due to conflicts with strimzi
+    size: 10Gi
+    type: persistent-claim
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  annotations:
+    strimzi.io/next-node-ids: '[0-9]'
+  labels:
+    strimzi.io/cluster: k8s-kfk
+  name: controller
+  namespace: kafka
+spec:
+  replicas: 1
+  roles:
+  - controller
+  storage:
+    class: sc1
+    size: 10Gi
+    type: persistent-claim

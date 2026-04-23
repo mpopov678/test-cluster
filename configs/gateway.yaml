@@ -24,3 +24,11 @@ spec:
         kind: Secret
         name: argocd-cert
       mode: Terminate
+  - allowedRoutes:
+      namespaces:
+        from: All
+    name: kafka-listener
+    port: 9095
+    protocol: TLS
+    tls:
+      mode: Passthrough

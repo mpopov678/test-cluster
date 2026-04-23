@@ -1,0 +1,53 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer # cluster wide issuer, can issue to and from any namespace
+metadata:
+  name: my-issuer
+  namespace: cert-manager
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kafka-cert
+  namespace: kafka
+spec:
+  secretName: kafka-cert
+  subject:
+    organizations:
+    - my-org
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS8
+    size: 2048
+  usages:
+  - server auth
+  - client auth
+  dnsNames:
+  - '*.strimzi.local'
+  issuerRef:
+    name: my-issuer
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-cert
+  namespace: networking
+spec:
+  secretName: argocd-cert
+  subject:
+    organizations:
+    - my-org
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS8
+    size: 2048
+  usages:
+  - server auth
+  - client auth
+  dnsNames:
+  - 'argocd.local'
+  issuerRef:
+    name: my-issuer
+    kind: ClusterIssuer
