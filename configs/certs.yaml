@@ -1,53 +1,55 @@
+# apiVersion: cert-manager.io/v1
+# kind: ClusterIssuer # cluster wide issuer, can issue to and from any namespace
+# metadata:
+#   name: my-issuer
+#   namespace: cert-manager
+# spec:
+#   selfSigned: {}
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: kafka-cert
+#   namespace: kafka
+# spec:
+#   secretName: kafka-cert
+#   subject:
+#     organizations:
+#     - my-org
+#   privateKey:
+#     algorithm: RSA
+#     encoding: PKCS8
+#     size: 2048
+#   usages:
+#   - server auth
+#   - client auth
+#   dnsNames:
+#   - '*.strimzi.local'
+#   issuerRef:
+#     name: my-issuer
+#     kind: ClusterIssuer
+# ---
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer # cluster wide issuer, can issue to and from any namespace
+kind: ClusterIssuer
 metadata:
-  name: my-issuer
+  name: cloudflare-issuer
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-account-key
+    solvers:
+    - dns01:
+        cloudflare:
+          apiTokenSecretRef:
+            name: cloudflare-api-token-secret
+            key: api-token
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-api-token-secret
   namespace: cert-manager
-spec:
-  selfSigned: {}
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: kafka-cert
-  namespace: kafka
-spec:
-  secretName: kafka-cert
-  subject:
-    organizations:
-    - my-org
-  privateKey:
-    algorithm: RSA
-    encoding: PKCS8
-    size: 2048
-  usages:
-  - server auth
-  - client auth
-  dnsNames:
-  - '*.strimzi.local'
-  issuerRef:
-    name: my-issuer
-    kind: ClusterIssuer
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: argocd-cert
-  namespace: networking
-spec:
-  secretName: argocd-cert
-  subject:
-    organizations:
-    - my-org
-  privateKey:
-    algorithm: RSA
-    encoding: PKCS8
-    size: 2048
-  usages:
-  - server auth
-  - client auth
-  dnsNames:
-  - 'argocd.local'
-  issuerRef:
-    name: my-issuer
-    kind: ClusterIssuer
+type: Opaque
+stringData:
+  api-token: ...

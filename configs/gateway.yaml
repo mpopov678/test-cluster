@@ -3,6 +3,8 @@ kind: Gateway
 metadata:
   name: eg
   namespace: networking
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare-issuer
 spec:
   gatewayClassName: cilium
   listeners:
@@ -16,6 +18,7 @@ spec:
       namespaces:
         from: All
     name: https
+    hostname: argocd.lab.mpopov.net
     port: 443
     protocol: HTTPS
     tls:
