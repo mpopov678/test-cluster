@@ -18,14 +18,14 @@ spec:
       namespaces:
         from: All
     name: https
-    hostname: argocd.lab.mpopov.net
+    hostname: "*.lab.mpopov.net"
     port: 443
     protocol: HTTPS
     tls:
       certificateRefs:
       - group: ""
         kind: Secret
-        name: argocd-cert
+        name: eg-tls
       mode: Terminate
   - allowedRoutes:
       namespaces:
