@@ -16,3 +16,4 @@ patches:
         name: argocd-cmd-params-cm
       data:
         server.insecure: "true"
+        # comment
