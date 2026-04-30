@@ -4,6 +4,7 @@ kind: Kustomization
 # Pull the base installation manifests from the stable branch
 resources:
   - github.com/argoproj/argo-cd//manifests/cluster-install?ref=stable
+  - test.yaml
 # Patch the argocd-cmd-params-cm ConfigMap to include the insecure flag
 patches:
   - target:
