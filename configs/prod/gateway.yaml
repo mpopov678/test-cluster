@@ -1,0 +1,31 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: cilium-gateway
+  namespace: kube-public
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+spec:
+  gatewayClassName: cilium
+  listeners:
+  
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+          
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.local.kenwavesolutions.com"
+      tls:
+        certificateRefs:
+        - group: ""
+          kind: Secret
+          name: cg-tls # cilium-gateway tls
+        mode: Terminate
+      allowedRoutes:
+        namespaces:
+          from: All

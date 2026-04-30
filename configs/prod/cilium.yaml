@@ -1,0 +1,16 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumLoadBalancerIPPool
+metadata:
+    name: "cluster-pool"
+spec:
+    blocks:
+        - start: "172.20.10.100"
+          stop: "172.20.10.105"
+---
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumL2AnnouncementPolicy
+metadata:
+    name: announcementpolicy
+spec:
+    externalIPs: true
+    loadBalancerIPs: true
