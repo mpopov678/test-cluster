@@ -9,7 +9,8 @@ spec:
     repoURL: https://github.com/mpopov678/test-cluster.git
     targetRevision: main
     path: infra/longhorn
-    helmCharts: true
+    kustomize:
+      helmCharts: true
   destination:
     server: https://kubernetes.default.svc
     namespace: longhorn-system
