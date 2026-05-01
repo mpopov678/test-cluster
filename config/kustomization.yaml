@@ -5,3 +5,4 @@ resources:
   - cert-manager-app.yaml
   - longhorn-app.yaml
   - cilium-config.yaml
+  - cloudnativepg-app.yaml
