@@ -17,6 +17,7 @@ helmCharts:
 
 resources:
   - storage-class.yaml
+  - httproute.yaml
 
 patches:
   - target:

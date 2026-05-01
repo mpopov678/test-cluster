@@ -4,6 +4,8 @@ namespace: argocd
 resources:
   - github.com/argoproj/argo-cd//manifests/cluster-install?ref=stable
   - argocd.yaml
+  - httproute.yaml
+
 patches:
   - target:
       kind: ConfigMap
