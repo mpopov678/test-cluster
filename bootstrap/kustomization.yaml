@@ -15,3 +15,13 @@ patches:
         name: argocd-cmd-params-cm
       data:
         server.insecure: "true"
+  - target:
+      kind: ConfigMap
+      name: argocd-cm
+    patch: |-
+      apiVersion: v1
+      kind: configMap
+      metadata:
+        name: argocd-cm
+      data: 
+        kustomize.buildOptions: "--enable-helm"
