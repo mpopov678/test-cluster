@@ -5,7 +5,7 @@ metadata:
   namespace: longhorn-system
 spec:
   hostnames:
-  - longhorn.mpopov.lab.net
+  - longhorn.lab.mpopov.net
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
