@@ -6,3 +6,4 @@ resources:
   - longhorn-app.yaml
   - cilium-config.yaml
   - cloudnativepg-app.yaml
+  - valkey-app.yaml
