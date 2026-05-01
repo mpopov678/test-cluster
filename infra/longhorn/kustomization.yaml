@@ -14,6 +14,8 @@ helmCharts:
         defaultDataPath: "/var/mnt/longhorn"
       preUpgradeChecker:
         jobEnabled: false
+      persistence:
+        defaultClass: false
 
 resources:
   - storage-class.yaml
