@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: cert-manager
+    repo: https://charts.longhorn.io
+    version: v1.11.1
+    releaseName: longhorn
+    namespace: longhorn-system # is this needed?
+    includeCRDs: true
+
+    valuesInline:
+      defaultSettings:
+        defaultDataPath: "/var/mnt/longhorn"
+      preUpgradeChecker:
+        jobEnabled: false
+
+resources:
+  - storage-class.yaml
+
+patches:
+  - target:
+      kind: StorageClass
+      name: longhorn
+    patch: |-
+      apiVersion: v1
+      kind: StorageClass
+      metadata:
+        name: longhorn
+      metadata:
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "false"
