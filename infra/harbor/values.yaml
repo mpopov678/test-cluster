@@ -185,7 +185,7 @@ database:
   # and fill the connection information in "external" section
   type: external
   external:
-    host: "postgres-cluster-rw.cnpg-system.svc.cluster.local"
+    host: "postgres-cluster-rw.harbor.svc.cluster.local"
     port: "5432"
     username: "registry"
     password: ""
