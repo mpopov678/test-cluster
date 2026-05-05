@@ -187,7 +187,7 @@ database:
   external:
     host: "postgres-cluster-rw.harbor.svc.cluster.local"
     port: "5432"
-    username: "registry"
+    username: "app"
     password: ""
     coreDatabase: "registry"
     # if using existing secret, the key must be "password"
