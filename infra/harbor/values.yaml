@@ -41,10 +41,6 @@ expose:
     # ClusterIP-specific labels
     labels: {}
 
-internalTLS:
-  # If internal TLS enabled
-  enabled: false
-
 persistence:
   enabled: true
   # Setting it to "keep" to avoid removing PVCs during a helm delete
@@ -191,11 +187,11 @@ database:
   external:
     host: "postgres-cluster-rw.cnpg-system.svc.cluster.local"
     port: "5432"
-    username: "user"
-    password: "password"
+    username: "registry"
+    password: ""
     coreDatabase: "registry"
     # if using existing secret, the key must be "password"
-    existingSecret: ""
+    existingSecret: "postgres-cluster-app"
     # "disable" - No SSL
     # "require" - Always SSL (skip verification)
     # "verify-ca" - Always SSL (verify that the certificate presented by the
@@ -203,7 +199,7 @@ database:
     # "verify-full" - Always SSL (verify that the certification presented by the
     # server was signed by a trusted CA and the server host name matches the one
     # in the certificate)
-    sslmode: "disable"
+    sslmode: "require"
   # The maximum number of connections in the idle connection pool per pod (core+exporter).
   # If it <=0, no idle connections are retained.
   maxIdleConns: 100
