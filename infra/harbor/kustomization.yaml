@@ -3,7 +3,7 @@ kind: Kustomization
 helmCharts:
   - name: harbor
     repo: https://helm.goharbor.io
-    version: v1.11.1
+    version: v1.18.3
     releaseName: harbor
     namespace: harbor
     includeCRDs: true
