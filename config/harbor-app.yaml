@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: harbor
+  namespace: argocd # always argocd, do not change
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mpopov678/test-cluster.git
+    targetRevision: main
+    path: infra/harbor
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: harbor
+  syncPolicy:
+    automated:
+      prune: true
+      enabled: true
+    syncOptions:
+      - CreateNamespace=true
