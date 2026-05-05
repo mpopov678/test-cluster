@@ -189,7 +189,7 @@ database:
     port: "5432"
     username: "app"
     password: ""
-    coreDatabase: "registry"
+    coreDatabase: "app"
     # if using existing secret, the key must be "password"
     existingSecret: "postgres-cluster-app"
     # "disable" - No SSL
