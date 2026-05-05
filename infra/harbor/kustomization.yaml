@@ -12,5 +12,5 @@ helmCharts:
     # valuesInline:
 
 
-# resources:
-#   - httproute.yaml
+resources:
+  - postgres-cluster.yaml

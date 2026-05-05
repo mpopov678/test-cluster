@@ -11,5 +11,5 @@ helmCharts:
 
     # valuesInline:
 
-resources:
-  - postgres-cluster.yaml
+# resources:
+#   - 
