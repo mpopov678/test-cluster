@@ -1,0 +1,228 @@
+expose:
+  # Set how to expose the service. Set the type as "ingress", "clusterIP", "nodePort", "loadBalancer" or "route"
+  # and fill the information in the corresponding section
+  type: clusterIP
+  clusterIP:
+    # The name of ClusterIP service
+    name: harbor
+    # The ip address of the ClusterIP service (leave empty for acquiring dynamic ip)
+    staticClusterIP: ""
+    ports:
+      # The service port Harbor listens on when serving HTTP
+      httpPort: 80
+      # The service port Harbor listens on when serving HTTPS
+      httpsPort: 443
+    # Annotations on the ClusterIP service
+    annotations: {}
+    # ClusterIP-specific labels
+    labels: {}
+
+persistence:
+  enabled: true
+  # Setting it to "keep" to avoid removing PVCs during a helm delete
+  # operation. Leaving it empty will delete PVCs after the chart deleted
+  # (this does not apply for PVCs that are created for internal database
+  # and redis components, i.e. they are never deleted automatically)
+  resourcePolicy: ""
+  persistentVolumeClaim:
+    registry:
+      # Use the existing PVC which must be created manually before bound,
+      # and specify the "subPath" if the PVC is shared with other components
+      existingClaim: ""
+      # Specify the "storageClass" used to provision the volume. Or the default
+      # StorageClass will be used (the default).
+      # Set it to "-" to disable dynamic provisioning
+      storageClass: ""
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      annotations: {}
+    jobservice:
+      jobLog:
+        existingClaim: ""
+        storageClass: ""
+        subPath: ""
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        annotations: {}
+    trivy:
+      existingClaim: ""
+      storageClass: ""
+      subPath: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      annotations: {}
+  # Define which storage backend is used for registry to store
+  # images and charts. Refer to
+  # https://github.com/distribution/distribution/blob/release/2.8/docs/configuration.md#storage
+  # for the detail.
+  imageChartStorage:
+    # Specify whether to disable `redirect` for images and chart storage, for
+    # backends which not supported it (such as using minio for `s3` storage type), please disable
+    # it. To disable redirects, simply set `disableredirect` to `true` instead.
+    # Refer to
+    # https://github.com/distribution/distribution/blob/release/2.8/docs/configuration.md#redirect
+    # for the detail.
+    disableredirect: false
+    # Specify the "caBundleSecretName" if the storage service uses a self-signed certificate.
+    # The secret must contain keys named "ca.crt" which will be injected into the trust store
+    # of registry's containers.
+    # caBundleSecretName:
+
+    # Specify the type of storage: "filesystem", "azure", "gcs", "s3", "swift",
+    # "oss" and fill the information needed in the corresponding section. The type
+    # must be "filesystem" if you want to use persistent volumes for registry
+    type: filesystem
+    filesystem:
+      rootdirectory: /storage
+      #maxthreads: 100
+    azure:
+      accountname: accountname
+      accountkey: base64encodedaccountkey
+      container: containername
+      #realm: core.windows.net
+      # To use existing secret, the key must be AZURE_STORAGE_ACCESS_KEY
+      existingSecret: ""
+    gcs:
+      bucket: bucketname
+      # The base64 encoded json file which contains the key
+      encodedkey: base64-encoded-json-key-file
+      #rootdirectory: /gcs/object/name/prefix
+      #chunksize: "5242880"
+      # To use existing secret, the key must be GCS_KEY_DATA
+      existingSecret: ""
+      useWorkloadIdentity: false
+    s3:
+      # Set an existing secret for S3 accesskey and secretkey
+      # keys in the secret should be REGISTRY_STORAGE_S3_ACCESSKEY and REGISTRY_STORAGE_S3_SECRETKEY for registry
+      #existingSecret: ""
+      region: us-west-1
+      bucket: bucketname
+      #accesskey: awsaccesskey
+      #secretkey: awssecretkey
+      #regionendpoint: http://myobjects.local
+      #encrypt: false
+      #keyid: mykeyid
+      #secure: true
+      #skipverify: false
+      #v4auth: true
+      #chunksize: "5242880"
+      #rootdirectory: /s3/object/name/prefix
+      #storageclass: STANDARD
+      #multipartcopychunksize: "33554432"
+      #multipartcopymaxconcurrency: 100
+      #multipartcopythresholdsize: "33554432"
+    swift:
+      authurl: https://storage.myprovider.com/v3/auth
+      username: username
+      password: password
+      container: containername
+      # keys in existing secret must be REGISTRY_STORAGE_SWIFT_PASSWORD, REGISTRY_STORAGE_SWIFT_SECRETKEY, REGISTRY_STORAGE_SWIFT_ACCESSKEY
+      existingSecret: ""
+      #region: fr
+      #tenant: tenantname
+      #tenantid: tenantid
+      #domain: domainname
+      #domainid: domainid
+      #trustid: trustid
+      #insecureskipverify: false
+      #chunksize: 5M
+      #prefix:
+      #secretkey: secretkey
+      #accesskey: accesskey
+      #authversion: 3
+      #endpointtype: public
+      #tempurlcontainerkey: false
+      #tempurlmethods:
+    oss:
+      accesskeyid: accesskeyid
+      accesskeysecret: accesskeysecret
+      region: regionname
+      bucket: bucketname
+      # key in existingSecret must be REGISTRY_STORAGE_OSS_ACCESSKEYSECRET
+      existingSecret: ""
+      #endpoint: endpoint
+      #internal: false
+      #encrypt: false
+      #secure: true
+      #chunksize: 10M
+      #rootdirectory: rootdirectory
+
+# The initial password of Harbor admin. Change it from portal after launching Harbor
+# or give an existing secret for it
+# key in secret is given via (default to HARBOR_ADMIN_PASSWORD)
+existingSecretAdminPassword: ""
+existingSecretAdminPasswordKey: HARBOR_ADMIN_PASSWORD
+harborAdminPassword: "Harbor12345"
+
+
+database:
+  # if external database is used, set "type" to "external"
+  # and fill the connection information in "external" section
+  type: external
+  external:
+    host: "postgres-cluster-rw.cnpg-system.svc.cluster.local"
+    port: "5432"
+    username: "user"
+    password: "password"
+    coreDatabase: "registry"
+    # if using existing secret, the key must be "password"
+    existingSecret: ""
+    # "disable" - No SSL
+    # "require" - Always SSL (skip verification)
+    # "verify-ca" - Always SSL (verify that the certificate presented by the
+    # server was signed by a trusted CA)
+    # "verify-full" - Always SSL (verify that the certification presented by the
+    # server was signed by a trusted CA and the server host name matches the one
+    # in the certificate)
+    sslmode: "disable"
+  # The maximum number of connections in the idle connection pool per pod (core+exporter).
+  # If it <=0, no idle connections are retained.
+  maxIdleConns: 100
+  # The maximum number of open connections to the database per pod (core+exporter).
+  # If it <= 0, then there is no limit on the number of open connections.
+  # Note: the default number of connections is 1024 for harbor's postgres.
+  maxOpenConns: 900
+  ## Additional deployment annotations
+  podAnnotations: {}
+  ## Additional deployment labels
+  podLabels: {}
+
+redis:
+  # if external Redis is used, set "type" to "external"
+  # and fill the connection information in "external" section
+  type: external
+  external:
+    # support redis, redis+sentinel
+    # addr for redis: <host_redis>:<port_redis>
+    # addr for redis+sentinel: <host_sentinel1>:<port_sentinel1>,<host_sentinel2>:<port_sentinel2>,<host_sentinel3>:<port_sentinel3>
+    addr: "valkey.valkey.svc.cluster.local:6379"
+    # The name of the set of Redis instances to monitor, it must be set to support redis+sentinel
+    sentinelMasterSet: ""
+    # TLS configuration for redis connection
+    # only server-authentication is supported, mTLS for redis connection is not supported
+    # tls connection will be disable by default
+    # Once `tlsOptions.enable` set as true, tls/ssl connection will be used for redis
+    # Please set the `caBundleSecretName` in this configuration file which conatins redis server rootCA if it is self-signed.
+    # The secret must contain keys named "ca.crt" which will be injected into the trust store
+    tlsOptions:
+      enable: false
+    # The "coreDatabaseIndex" must be "0" as the library Harbor
+    # used doesn't support configuring it
+    # harborDatabaseIndex defaults to "0", but it can be configured to "6", this config is optional
+    # cacheLayerDatabaseIndex defaults to "0", but it can be configured to "7", this config is optional
+    coreDatabaseIndex: "0"
+    jobserviceDatabaseIndex: "1"
+    registryDatabaseIndex: "2"
+    trivyAdapterIndex: "5"
+    # harborDatabaseIndex: "6"
+    # cacheLayerDatabaseIndex: "7"
+    # username field can be an empty string, and it will be authenticated against the default user
+    username: ""
+    password: ""
+    # If using existingSecret, the key must be REDIS_PASSWORD, if ACL mode enabled, also inlcudes data of username, the keys must be REDIS_USERNAME
+    existingSecret: ""
+  ## Additional deployment annotations
+  podAnnotations: {}
+  ## Additional deployment labels
+  podLabels: {}

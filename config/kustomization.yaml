@@ -8,3 +8,4 @@ resources:
   - cloudnativepg-app.yaml
   - valkey-app.yaml
   - kube-prom-app.yaml
+  - harbor-app.yaml
