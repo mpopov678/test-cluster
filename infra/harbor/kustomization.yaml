@@ -14,3 +14,4 @@ helmCharts:
 
 resources:
   - postgres-cluster.yaml
+  - httproute.yaml
