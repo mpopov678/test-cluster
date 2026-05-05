@@ -17,6 +17,10 @@ expose:
     # ClusterIP-specific labels
     labels: {}
 
+internalTLS:
+  # If internal TLS enabled
+  enabled: false
+
 persistence:
   enabled: true
   # Setting it to "keep" to avoid removing PVCs during a helm delete
