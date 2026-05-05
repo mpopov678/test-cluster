@@ -2,7 +2,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: grafana-httproute
-  namespace: monitoring
+  namespace: kube-system
 spec:
   hostnames:
   - grafana.lab.mpopov.net
