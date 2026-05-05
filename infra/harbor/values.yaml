@@ -18,7 +18,6 @@ persistence:
       accessMode: ReadWriteOnce
       size: 5Gi
 
-#externalURL: https://harbor.lab.mpopov.net
 harborAdminPassword: "Harbor12345"
 
 database:
