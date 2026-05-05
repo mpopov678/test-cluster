@@ -2,6 +2,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: postgres-cluster
+  namespace: harbor
 spec:
   instances: 1
 
