@@ -4,6 +4,5 @@ metadata:
   name: postgres-cluster
 spec:
   instances: 1
-
   storage:
     size: 10Gi
