@@ -1,1 +1,4 @@
 infra/harbor/values (3).yaml
+bootstrap/deployment.yaml
+overlays
+templates
