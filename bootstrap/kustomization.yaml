@@ -5,7 +5,8 @@ resources:
   - github.com/argoproj/argo-cd//manifests/core-install?ref=stable
   - argocd.yaml
   - httproute.yaml
-  - deployment.yaml
+  # - deployment.yaml
+  - applicationset.yaml
 
 patches:
   - target:
