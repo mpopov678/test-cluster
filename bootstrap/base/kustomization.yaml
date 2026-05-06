@@ -5,8 +5,7 @@ resources:
   - github.com/argoproj/argo-cd//manifests/core-install?ref=stable
   - argocd.yaml
   - httproute.yaml
-  # - deployment.yaml
-  - applicationset.yaml
+  - appset.yaml
 
 patches:
   - target:
@@ -19,6 +18,7 @@ patches:
         name: argocd-cmd-params-cm
       data:
         server.insecure: "true"
+
   - target:
       kind: ConfigMap
       name: argocd-cm
