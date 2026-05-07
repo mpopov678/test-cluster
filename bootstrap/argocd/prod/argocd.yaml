@@ -5,4 +5,4 @@ metadata:
   namespace: argocd
 spec:
   source:
-    path: bootstrap/argocd/base
+    path: bootstrap/argocd/prod
