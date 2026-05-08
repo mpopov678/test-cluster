@@ -21,3 +21,13 @@ spec:
         kind: Secret
         name: eg-tls
       mode: Terminate
+  
+  - allowedRoutes:
+      namespaces:
+        from: All
+    name: tls
+    hostname: "vault.lab.mpopov.net" # specific domain takes precendence over wildcard
+    port: 443
+    protocol: TLS
+    tls:
+      mode: Passthrough
