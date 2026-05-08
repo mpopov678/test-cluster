@@ -5,4 +5,4 @@ metadata:
   namespace: argocd
 spec:
   hostnames:
-  - argocd.lab.prod.net
+  - argocd.k8s.prod.net
