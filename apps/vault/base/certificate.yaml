@@ -1,13 +1,32 @@
 apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: vault-tls
+  name: my-selfsigned-ca
   namespace: vault
 spec:
-  dnsNames:
-  - 'vault.lab.mpopov.net'
+  isCA: true
+  commonName: my-selfsigned-ca
+  secretName: root-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
   issuerRef:
-    group: cert-manager.io
+    name: selfsigned-issuer
     kind: ClusterIssuer
-    name: cloudflare-issuer
-  secretName: vault-tls
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: my-ca-issuer
+  namespace: vault
+spec:
+  ca:
+    secretName: root-secret

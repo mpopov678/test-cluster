@@ -48,7 +48,7 @@ server:
 
   extraVolumes:
     - type: secret
-      name: vault-tls
+      name: root-secret
   # COMMENTED BECAUSE USING TRUSTED CERTS
     # - type: secret
     #   name: tls-server
@@ -89,9 +89,9 @@ server:
           path = "/vault/data"
           retry_join {
             leader_api_addr = "https://vault-0.vault-internal:8200"
+            leader_ca_cert_file = "/vault/userconfig/vault-tls/ca.crt"
             leader_client_cert_file = "/vault/userconfig/vault-tls/tls.crt"
             leader_client_key_file = "/vault/userconfig/vault-tls/tls.key"
-            leader_tls_servername = "vault.lab.mpopov.net"
           }
         } 
       # COMMENTED BECAUSE USING 1 REPLICA
@@ -123,6 +123,6 @@ server:
 # Vault UI
 ui:
   enabled: true
-  serviceType: "ClusterIP"
+  serviceType: "LoadBalancer"
   serviceNodePort: null
   externalPort: 8200
