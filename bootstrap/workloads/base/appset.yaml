@@ -11,7 +11,7 @@ spec:
       repoURL: https://github.com/mpopov678/test-cluster.git
       revision: HEAD
       directories:
-      - path: apps/*/base/kustomization.yaml
+      - path: apps/*/base
   template:
     metadata:
       name: '{{index .path.segments 1}}'
