@@ -5,5 +5,5 @@ resources:
 - ../base
 
 patchesStrategicMerge:
-- argocd.yaml
-- httproute.yaml
+- appset.yaml
+- root-app.yaml
