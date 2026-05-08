@@ -91,6 +91,7 @@ server:
             leader_api_addr = "https://vault-0.vault-internal:8200"
             leader_client_cert_file = "/vault/userconfig/vault-tls/tls.crt"
             leader_client_key_file = "/vault/userconfig/vault-tls/tls.key"
+            leader_tls_servername = "vault.lab.mpopov.net"
           }
         } 
       # COMMENTED BECAUSE USING 1 REPLICA
