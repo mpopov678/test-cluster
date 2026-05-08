@@ -40,8 +40,8 @@ server:
   # used to include variables required for auto-unseal.
 
   # COMMENTED BECAUSE USING TRUSTED CERTS
-  # extraEnvironmentVars:
-  #   VAULT_CACERT: /vault/userconfig/tls-ca/ca.crt
+  extraEnvironmentVars:
+    VAULT_CACERT: /vault/userconfig/root-secret/ca.crt
 
   # extraVolumes is a list of extra volumes to mount. These will be exposed
   # to Vault in the path `/vault/userconfig/<name>/`.
