@@ -6,7 +6,8 @@ metadata:
 spec:
   parentRefs:
   - name: eg  
-    namespace: networking 
+    namespace: networking
+    sectionName: vault-tls
   hostnames:
   - "vault.lab.mpopov.net"
   rules:
