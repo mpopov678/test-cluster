@@ -29,6 +29,7 @@ spec:
     - vault-internal
     - vault-internal.vault.svc.cluster.local
     - vault-0.vault-internal
+    - vault.lab.mpopov.net
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
