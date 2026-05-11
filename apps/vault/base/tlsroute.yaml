@@ -11,5 +11,5 @@ spec:
   - "vault.lab.mpopov.net"
   rules:
   - backendRefs:
-    - name: vault-active
+    - name: vault-ui
       port: 8200

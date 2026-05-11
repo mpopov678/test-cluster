@@ -10,7 +10,6 @@ helmCharts:
     valuesFile: values.yaml
     # valuesInline:
 
-
 resources:
 - certificate.yaml
 - tlsroute.yaml
