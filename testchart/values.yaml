@@ -10,3 +10,6 @@ certManager:
   installCRDs: true
   dns01RecursiveNameservers: "8.8.8.8:53"
   dns01RecursiveNameserversOnly: true
+
+certManagerConfigs:
+  acmeServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
