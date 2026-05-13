@@ -5,7 +5,6 @@ global:
 # values for specific dependencies
 # dev/prod/staging specific values can be defined in values.yaml during helm install
 certManager:
-  image: 
   config:
     enableGatewayAPI: true
   installCRDs: true
