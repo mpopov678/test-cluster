@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: harbor
+  namespace: argocd # must be where Argo CD is installed
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://helm.goharbor.io
+      targetRevision: v1.18.3
+      chart: harbor
+      helm:
+        values: |
+          {{- toYaml .Values.harbor | nindent 10 }}
+
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      path: apps/harbor
+      targetRevision: HEAD
+      helm:
+        values: |
+          {{- toYaml .Values.harborConfigs | nindent 10 }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: harbor
+  syncPolicy:
+    automated:
+      prune: true
+      selfheal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

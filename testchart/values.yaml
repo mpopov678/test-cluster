@@ -178,15 +178,63 @@ vault:
     serviceNodePort: null
     externalPort: 8200
 
+
 vaultConfigs:
+
 
 valkey:
   dataStorage:
     enabled: true
     requestedSize: 10Gi
 
+
 valkeyConfigs:
+
 
 cloudnativepg:
 
+
 cloudnativepgConfigs:
+
+
+harbor:
+  expose:
+    type: clusterIP
+    tls:
+      enabled: false # handled by GatewayAPI
+
+  persistence:
+    enabled: true
+    resourcePolicy: "" # set keep to avoid deleting PVCs after helm delete
+    persistentVolumeClaim:
+      registry:
+        accessMode: ReadWriteOnce
+        size: 5Gi
+      jobservice:
+        jobLog:
+          accessMode: ReadWriteOnce
+          size: 1Gi
+      trivy:
+        accessMode: ReadWriteOnce
+        size: 5Gi
+
+  harborAdminPassword: "Harbor12345"
+
+  database:
+    type: external
+    external:
+      host: "postgres-cluster-rw.harbor.svc.cluster.local" # static hostname
+      port: "5432" 
+      username: "app" # found in postgres cluster secret
+      password: "" # automatically extracted from secret
+      coreDatabase: "app" # found in postgres cluster secret
+      existingSecret: "postgres-cluster-app"
+      sslmode: "require" # postgres enforces SASL
+
+  redis:
+    type: external
+    external:
+      addr: "valkey.valkey.svc.cluster.local:6379" # static hostname
+
+
+harborConfigs:
