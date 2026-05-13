@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn
+  namespace: argocd # must be where Argo CD is installed
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://charts.longhorn.io
+      targetRevision: v1.11.2
+      chart: longhorn
+      helm:
+        values: |
+          {{- toYaml .Values.longhorn | nindent 10 }}
+
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      path: apps/longhorn
+      targetRevision: HEAD
+      helm:
+        values: |
+          {{- toYaml .Values.longhornConfigs | nindent 10 }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfheal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
