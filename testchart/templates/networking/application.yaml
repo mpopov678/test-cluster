@@ -7,10 +7,10 @@ metadata:
   - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    repoURL: https://github.com/mpopov678/test-cluster.git
-    path: testchart/templates/networking
-    targetRevision: HEAD
+  sources:
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      path: apps/networking
+      targetRevision: HEAD
   destination:
     server: https://kubernetes.default.svc
     namespace: networking
