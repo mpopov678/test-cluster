@@ -1,3 +1,5 @@
 infra/harbor/values (3).yaml
 bootstrap/deployment.yaml
 overlays
+apps\cert-manager\chart.yaml
+apps\cert-manager\kustomization.yaml
