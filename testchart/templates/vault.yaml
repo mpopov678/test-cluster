@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd # must be where Argo CD is installed
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://helm.releases.hashicorp.com
+      targetRevision: v0.28.0
+      chart: vault
+      helm:
+        values: |
+          {{- toYaml .Values.vault | nindent 10 }}
+
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      path: apps/vault
+      targetRevision: HEAD
+      helm:
+        values: |
+          {{- toYaml .Values.vaultConfigs | nindent 10 }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: true
+      selfheal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
