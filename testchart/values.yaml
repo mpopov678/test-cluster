@@ -1,0 +1,13 @@
+# global value that can be used in all subcharts
+global:
+  domain: "lab.mpopov.net"
+
+# values for specific dependencies
+# dev/prod/staging specific values can be defined in values.yaml during helm install
+cert-manager:
+  image: 
+  config:
+    enableGatewayAPI: true
+  installCRDs: true
+  dns01RecursiveNameservers: "8.8.8.8:53"
+  dns01RecursiveNameserversOnly: true

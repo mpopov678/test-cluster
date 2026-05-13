@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd # must be where Argo CD is installed
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://charts.jetstack.io # helm chart
+    targetRevision: v1.20.2
+    chart: cert-manager
+    helm:
+      values: |
+        {{- toYaml .Values.certManager | nindent 8 }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfheal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -5,6 +5,7 @@ resources:
   - github.com/argoproj/argo-cd//manifests/cluster-install?ref=stable
   - argocd.yaml
   - httproute.yaml
+  - apps.yaml
 
 patches:
   - target:
