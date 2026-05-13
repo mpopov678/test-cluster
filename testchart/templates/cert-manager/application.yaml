@@ -14,8 +14,8 @@ spec:
       chart: cert-manager
       helm:
         values: |
-          {{- toYaml .Values.certManager | nindent 8 }}
-          
+          {{- toYaml .Values.certManager | nindent 10 }}
+
     - repoURL: https://github.com/mpopov678/test-cluster.git
       path: apps/cert-manager
       targetRevision: HEAD
