@@ -177,3 +177,13 @@ vault:
     serviceType: "ClusterIP"
     serviceNodePort: null
     externalPort: 8200
+
+vaultConfigs:
+
+valkey:
+  dataStorage:
+    enabled: true
+    requestedSize: 10Gi
+
+valkeyConfigs:
+
