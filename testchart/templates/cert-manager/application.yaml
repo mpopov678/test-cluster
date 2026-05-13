@@ -7,13 +7,19 @@ metadata:
   - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    repoURL: https://charts.jetstack.io # helm chart
-    targetRevision: v1.20.2
-    chart: cert-manager
-    helm:
-      values: |
-        {{- toYaml .Values.certManager | nindent 8 }}
+
+  sources:
+    - repoURL: https://charts.jetstack.io # helm chart
+      targetRevision: v1.20.2
+      chart: cert-manager
+      helm:
+        values: |
+          {{- toYaml .Values.certManager | nindent 8 }}
+          
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      path: apps/cert-manager
+      targetRevision: HEAD
+
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
