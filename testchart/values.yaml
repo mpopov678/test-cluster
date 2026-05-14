@@ -52,7 +52,7 @@ vault:
   # Vault Helm chart Value Overrides
   global:
     enabled: true
-    tlsDisable: false
+    tlsDisable: true
     resources:
       requests:
         memory: 256Mi
@@ -90,7 +90,6 @@ vault:
     # extraEnvironmentVars is a list of extra environment variables to set with the stateful set. These could be
     # used to include variables required for auto-unseal.
 
-    # COMMENTED BECAUSE USING TRUSTED CERTS
     extraEnvironmentVars:
       VAULT_CACERT: /vault/userconfig/root-secret/ca.crt
 
