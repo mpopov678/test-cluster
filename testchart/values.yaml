@@ -131,17 +131,13 @@ vault:
           listener "tcp" {
             address = "[::]:8200"
             cluster_address = "[::]:8201"
-            tls_cert_file = "/vault/userconfig/root-secret/tls.crt"
-            tls_key_file = "/vault/userconfig/root-secret/tls.key"
+            tls_disable = 1
           }
 
           storage "raft" {
             path = "/vault/data"
             retry_join {
               leader_api_addr = "https://vault-0.vault-internal:8200"
-              leader_ca_cert_file = "/vault/userconfig/root-secret/ca.crt"
-              leader_client_cert_file = "/vault/userconfig/root-secret/tls.crt"
-              leader_client_key_file = "/vault/userconfig/root-secret/tls.key"
             }
           } 
         # COMMENTED BECAUSE USING 1 REPLICA
