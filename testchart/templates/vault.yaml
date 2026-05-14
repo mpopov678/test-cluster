@@ -33,3 +33,12 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+
+# Ignoring differences in volume claim templates because the Helm chart doesn't set apiVersion and kind
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      name: vault
+      jqPathExpressions:
+        - '.spec.volumeClaimTemplates[].apiVersion'
+        - '.spec.volumeClaimTemplates[].kind'
