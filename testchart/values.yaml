@@ -137,7 +137,7 @@ vault:
           storage "raft" {
             path = "/vault/data"
             retry_join {
-              leader_api_addr = "https://vault-0.vault-internal:8200"
+              leader_api_addr = "http://vault-0.vault-internal:8200"
             }
           } 
         # COMMENTED BECAUSE USING 1 REPLICA
