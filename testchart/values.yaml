@@ -287,6 +287,12 @@ gitlab:
   prometheus:
   install: false
 
+  postgresql:
+    install: false
+
+  redis:
+    install: false
+
   installCertmanager: false
   certmanager-issuer:
     email: michaelpopov678@gmail.com
