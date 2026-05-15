@@ -272,7 +272,7 @@ gitlab:
       configureCertmanager: false
 
     psql:
-      host: gitlab-db-rw.svc.cluster.local
+      host: gitlab-db-rw.gitlab.svc.cluster.local
       password:
         secret: gitlab-secret
         key: password
