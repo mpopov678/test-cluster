@@ -286,3 +286,5 @@ externalDns:
     install: false
 
     installCertmanager: false
+    certmanager-issuer:
+      email: michaelpopov678@gmail.com
