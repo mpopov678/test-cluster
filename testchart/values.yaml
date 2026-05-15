@@ -261,30 +261,30 @@ externalDns:
   sources:
     - gateway-httproute # external gateway scans for hostnames in httproute
 
-  gitlab:
-    global:
-      edition: ce
-      hosts:
-        domain: lab.mpopov.net
-        externalIP: 192.168.88.100 #potentially not needed with external dns
-        https: false
-      gatewayApi:
-        configureCertmanager: false
+gitlab:
+  global:
+    edition: ce
+    hosts:
+      domain: lab.mpopov.net
+      externalIP: 192.168.88.100 #potentially not needed with external dns
+      https: false
+    gatewayApi:
+      configureCertmanager: false
 
-      psql:
-        host: gitlab-db-rw.svc.cluster.local
-        password:
-          secret: gitlab-secret
-          key: password
-          
-      redis:
-        host: valkey.svc.cluster.local
-        auth:
-          enabled: false
-          
-    prometheus:
-    install: false
+    psql:
+      host: gitlab-db-rw.svc.cluster.local
+      password:
+        secret: gitlab-secret
+        key: password
+        
+    redis:
+      host: valkey.svc.cluster.local
+      auth:
+        enabled: false
+        
+  prometheus:
+  install: false
 
-    installCertmanager: false
-    certmanager-issuer:
-      email: michaelpopov678@gmail.com
+  installCertmanager: false
+  certmanager-issuer:
+    email: michaelpopov678@gmail.com
