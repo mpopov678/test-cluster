@@ -278,7 +278,7 @@ gitlab:
         key: password
         
     redis:
-      host: valkey.svc.cluster.local
+      host: valkey.valkey.svc.cluster.local
       auth:
         enabled: false
         
