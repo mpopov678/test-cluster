@@ -276,6 +276,8 @@ gitlab:
       password:
         secret: gitlab-secret
         key: password
+        username: gitlab
+        database: gitlabhq_production
         
     redis:
       host: valkey.valkey.svc.cluster.local
