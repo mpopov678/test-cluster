@@ -244,7 +244,7 @@ externalDns:
     - --rfc2136-zone=lab.mpopov.net
     - --rfc2136-zone=88.168.192.in-addr.arpa
     - --rfc2136-tsig-keyname=external-dns
-    - --rfc2136-tsig-secret=tsig-secret
+    - --rfc2136-tsig-secret=/Wiu/gq07eqBoOuxGjQCdsBtfXB/H2nvN8YhCtW9UBk=
     - --rfc2136-tsig-secret-alg=hmac-sha256
     - --rfc2136-tsig-axfr
     - --create-ptr
