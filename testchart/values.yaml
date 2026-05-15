@@ -266,7 +266,7 @@ externalDns:
       edition: ce
       hosts:
         domain: lab.mpopov.net
-        externalIP=192.168.88.100 #potentially not needed with external dns
+        externalIP: 192.168.88.100 #potentially not needed with external dns
         https: false
       gatewayApi:
         configureCertmanager: false
