@@ -288,3 +288,6 @@ gitlab:
   installCertmanager: false
   certmanager-issuer:
     email: michaelpopov678@gmail.com
+  
+  upgradeCheck:
+    enabled: false
