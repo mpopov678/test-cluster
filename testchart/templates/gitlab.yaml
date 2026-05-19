@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitlab
+  namespace: argocd # must be where Argo CD is installed
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://charts.gitlab.io/
+      targetRevision: v9.11.4
+      chart: gitlab
+      helm:
+        values: |
+          {{- toYaml .Values.gitlab | nindent 10 }}
+
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      path: apps/gitlab
+      targetRevision: HEAD
+      helm:
+        values: |
+          {{- toYaml .Values.gitlabConfigs | nindent 10 }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitlab
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
