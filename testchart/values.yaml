@@ -258,6 +258,13 @@ gitea:
   global:
     namespace: "gitea"
     clusterDomain: "lab.mpopov.net"
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4096Mi
+    requests:
+      cpu: 1000m
+      memory: 2048Mi
 
   valkey-cluster:
     enabled: false
