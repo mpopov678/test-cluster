@@ -16,6 +16,13 @@ spec:
         values: |
           {{- toYaml .Values.gitea | nindent 10 }}
 
+    - repoURL: https://dl.gitea.com/charts/
+      targetRevision: v0.1.0
+      chart: actions
+      helm:
+        values: |
+          {{- toYaml .Values.actions | nindent 10 }}
+
     - repoURL: https://github.com/mpopov678/test-cluster.git
       path: apps/gitea
       targetRevision: HEAD
