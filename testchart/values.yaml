@@ -268,6 +268,9 @@ gitea:
   postgresql:
     enabled: true
 
+actions:
+  enabled: true
+
 # gitlab:
 #   global:
 #     edition: ce
