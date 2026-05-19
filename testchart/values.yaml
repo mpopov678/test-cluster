@@ -270,7 +270,7 @@ gitea:
 
 actions:
   enabled: true
-  giteaRootURL: gitea.lab.mpopov.net
+  giteaRootURL: https://gitea.lab.mpopov.net
   existingSecret: "runner-secret"
   existingSecretKey: "runner-token"
 
