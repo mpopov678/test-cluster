@@ -254,67 +254,81 @@ externalDns:
   sources:
     - gateway-httproute # external gateway scans for hostnames in httproute
 
-gitlab:
+gitea:
   global:
-    edition: ce
+    namespace: "gitea"
+    clusterDomain: "lab.mpopov.net"
 
-    hosts:
-      domain: lab.mpopov.net
-      externalIP: 192.168.88.100 #potentially not needed with external dns
-      https: false
-      registry:
-        protocol: http
-
-      ingress:
-        enabled: false
-    gatewayApi:
-      enabled: true
-      configureCertmanager: false
-    workhorse:
-      tls:
-        enabled: false
-      kas:
-        tls:
-          enabled: false
-      gitaly:
-        tls:
-          enabled: false
-
-    psql:
-      host: gitlab-db-rw.gitlab.svc.cluster.local
-      password:
-        secret: gitlab-secret
-        key: password
-        username: gitlab
-        database: gitlabhq_production
-
-    redis:
-      host: valkey.valkey.svc.cluster.local
-      auth:
-        enabled: false
-
-  gitlab:
-    webservice:
-      workhorse:
-        tls:
-          enabled: false
-
-  registry:
-    tls:
-      enabled: false
-
-  prometheus:
-  install: false
-
-  postgresql:
-    install: false
-
-  redis:
-    install: false
-
-  installCertmanager: false
-  certmanager-issuer:
-    email: michaelpopov678@gmail.com
-
-  upgradeCheck:
+  valkey-cluster:
     enabled: false
+  valkey:
+    enabled: true
+  postgresql-ha:
+    enabled: false
+  postgresql:
+    enabled: true
+
+# gitlab:
+#   global:
+#     edition: ce
+
+#     hosts:
+#       domain: lab.mpopov.net
+#       externalIP: 192.168.88.100 #potentially not needed with external dns
+#       https: false
+#       registry:
+#         protocol: http
+
+#       ingress:
+#         enabled: false
+#     gatewayApi:
+#       enabled: true
+#       configureCertmanager: false
+#     workhorse:
+#       tls:
+#         enabled: false
+#       kas:
+#         tls:
+#           enabled: false
+#       gitaly:
+#         tls:
+#           enabled: false
+
+#     psql:
+#       host: gitlab-db-rw.gitlab.svc.cluster.local
+#       password:
+#         secret: gitlab-secret
+#         key: password
+#         username: gitlab
+#         database: gitlabhq_production
+
+#     redis:
+#       host: valkey.valkey.svc.cluster.local
+#       auth:
+#         enabled: false
+
+#   gitlab:
+#     webservice:
+#       workhorse:
+#         tls:
+#           enabled: false
+
+#   registry:
+#     tls:
+#       enabled: false
+
+#   prometheus:
+#   install: false
+
+#   postgresql:
+#     install: false
+
+#   redis:
+#     install: false
+
+#   installCertmanager: false
+#   certmanager-issuer:
+#     email: michaelpopov678@gmail.com
+
+#   upgradeCheck:
+#     enabled: false
