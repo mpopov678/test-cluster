@@ -270,6 +270,9 @@ gitea:
 
 actions:
   enabled: true
+  giteaRootURL: gitea.lab.mpopov.net
+  existingSecret: "runner-secret"
+  existingSecretKey: "runner-token"
 
 # gitlab:
 #   global:
