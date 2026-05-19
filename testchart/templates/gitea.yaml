@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitea
+  namespace: argocd # must be where Argo CD is installed
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://dl.gitea.com/charts/
+      targetRevision: v12.6.0
+      chart: gitea
+      helm:
+        values: |
+          {{- toYaml .Values.gitea | nindent 10 }}
+
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      path: apps/gitea
+      targetRevision: HEAD
+      helm:
+        values: |
+          {{- toYaml .Values.giteaConfigs | nindent 10 }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitea
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
