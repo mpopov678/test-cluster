@@ -292,43 +292,57 @@ gitlab:
       registry:
         protocol: http
 
-      ingress:
-        enabled: false
+    ingress:
+      enabled: false
+
     gatewayApi:
       enabled: true
+      gatewayRef:
+        name: eg
+        namespace: networking
+      installEnvoy: false
       configureCertmanager: false
-    workhorse:
-      tls:
-        enabled: false
-      kas:
-        tls:
-          enabled: false
-      gitaly:
-        tls:
-          enabled: false
-
+      httpToHttpsRedirect: false
+  
     psql:
       host: gitlab-db-rw.gitlab.svc.cluster.local
+      username: gitlab
+      database: gitlabhq_production
       password:
         secret: gitlab-secret
         key: password
-        username: gitlab
-        database: gitlabhq_production
 
     redis:
       host: valkey.valkey.svc.cluster.local
       auth:
         enabled: false
 
-  gitlab:
-    webservice:
-      workhorse:
-        tls:
-          enabled: false
-
+  gitaly:
+    tls:
+      enabled: false
+  praefect:
+    tls:
+      enabled: false
+  workhorse:
+    tls:
+      enabled: false
   registry:
     tls:
       enabled: false
+  kas:
+    tls:
+      enabled: false
+  cell:
+    topologyServiceClient:
+      tls:
+        enabled: false
+
+  installCertmanager: false
+  certmanager-issuer:
+    email: michaelpopov678@gmail.com
+
+  upgradeCheck:
+    enabled: false
 
   prometheus:
   install: false
@@ -339,9 +353,11 @@ gitlab:
   redis:
     install: false
 
-  installCertmanager: false
-  certmanager-issuer:
-    email: michaelpopov678@gmail.com
 
-  upgradeCheck:
-    enabled: false
+
+
+
+
+
+
+
