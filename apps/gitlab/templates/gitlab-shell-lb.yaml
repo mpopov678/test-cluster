@@ -1,0 +1,17 @@
+# This is needed because cilium gateway does not support TCPRoutes
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitlab-shell-lb
+  namespace: gitlab
+spec:
+  type: LoadBalancer
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: 22
+      protocol: TCP
+  selector:
+    # Matching the labels from your describe output
+    app: gitlab-shell
+    release: gitlab
