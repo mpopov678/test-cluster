@@ -333,7 +333,7 @@ gitlab:
       enabled: false
   kas:
     gatewayRoute:
-      sectionName: null
+      sectionName: "https"
     tls:
       enabled: false
   cell:
