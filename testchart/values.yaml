@@ -287,8 +287,8 @@ gitlab:
 
     hosts:
       domain: lab.mpopov.net
-      externalIP: 192.168.88.100 #potentially not needed with external dns
       https: false
+      ssh: gitlab-ssh.lab.mpopov.net
       registry:
         protocol: http
 
