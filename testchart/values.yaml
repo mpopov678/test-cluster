@@ -327,15 +327,26 @@ gitlab:
     tls:
       enabled: false
   registry:
+    gatewayRoute:
+      sectionName: null
     tls:
       enabled: false
   kas:
+    gatewayRoute:
+      sectionName: null
     tls:
       enabled: false
   cell:
     topologyServiceClient:
       tls:
         enabled: false
+  gitlab:
+    webservice:
+      gatewayRoute:
+        sectionName: null
+  minio:
+    gatewayRoute:
+      sectionName: null
 
   installCertmanager: false
   certmanager-issuer:
