@@ -331,11 +331,6 @@ gitlab:
       sectionName: null
     tls:
       enabled: false
-  kas:
-    gatewayRoute:
-      sectionName: "https"
-    tls:
-      enabled: false
   cell:
     topologyServiceClient:
       tls:
@@ -344,6 +339,11 @@ gitlab:
     webservice:
       gatewayRoute:
         sectionName: null
+    kas:
+      gatewayRoute:
+        sectionName: "https"
+      tls:
+        enabled: false
   minio:
     gatewayRoute:
       sectionName: null
