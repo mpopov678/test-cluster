@@ -341,7 +341,7 @@ gitlab:
         sectionName: null
     kas:
       gatewayRoute:
-        sectionName: "null"
+        sectionName: null
       tls:
         enabled: false
     gitlab-shell:
