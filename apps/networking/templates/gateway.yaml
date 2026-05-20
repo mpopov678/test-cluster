@@ -32,3 +32,10 @@ spec:
         kind: Secret
         name: eg-tls
       mode: Terminate
+
+  - allowedRoutes:
+      namespaces:
+        from: All
+    name: tcp
+    port: 22
+    protocol: TCP
