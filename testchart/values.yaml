@@ -341,9 +341,12 @@ gitlab:
         sectionName: null
     kas:
       gatewayRoute:
-        sectionName: "https"
+        sectionName: "null"
       tls:
         enabled: false
+    gitlab-shell:
+      gatewayRoute:
+        sectionName: null
   minio:
     gatewayRoute:
       sectionName: null
