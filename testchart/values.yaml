@@ -317,6 +317,9 @@ gitlab:
       auth:
         enabled: false
 
+  gitlab-runner:
+    gitlabUrl: "https://gitlab.lab.mpopov.net/"
+
   gitaly:
     tls:
       enabled: false
