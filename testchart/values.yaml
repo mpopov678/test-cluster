@@ -399,7 +399,7 @@ rustfs:
       enabled: false
   
   ingress:
-    enabled: true
+    enabled: false
 
   storageclass:
     name: sc1
