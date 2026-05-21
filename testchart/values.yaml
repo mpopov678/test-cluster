@@ -384,5 +384,8 @@ minio:
       console:
         name: minio-console
         serviceType: ClusterIP
+      minio:
+        name: minio
+        serviceType: ClusterIP
 
 minioConfigs:
