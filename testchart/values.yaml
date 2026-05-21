@@ -288,12 +288,9 @@ gitlab:
     hosts:
       domain: lab.mpopov.net  
       https: true
-      ssh: gitlab-ssh.lab.mpopov.net
+      ssh: gitlab-ssh.lab.mpopov.net # seperate hostname for ssh since its using a different IP
       registry:
         enabled: false
-    
-    shell:
-      port: 22
 
     ingress:
       enabled: false
@@ -333,6 +330,7 @@ gitlab:
   gitlab-runner:
     gitlabUrl: "https://gitlab.lab.mpopov.net/"
 
+# Disabling interpod-tls
   gitaly:
     tls:
       enabled: false
@@ -344,7 +342,8 @@ gitlab:
       enabled: false
   registry:
     gatewayRoute:
-      sectionName: null
+    # disabling sectionname for routes since it will choose correct listener by default
+      sectionName: null 
     tls:
       enabled: false
   cell:
@@ -360,22 +359,22 @@ gitlab:
         sectionName: null
       tls:
         enabled: false
+    # using type load balancer because could not get ciluim gateway to accept ssh tcproute
     gitlab-shell:
       service:
         type: LoadBalancer
       gatewayRoute:
         sectionName: null
-  minio:
-    gatewayRoute:
-      sectionName: null
 
   installCertmanager: false
   certmanager-issuer:
     email: michaelpopov678@gmail.com
 
+# upgradecheck causes issues during bootstrap
   upgradeCheck:
     enabled: false
 
+# all the following services are replaced with external ones
   prometheus:
     install: false
 
