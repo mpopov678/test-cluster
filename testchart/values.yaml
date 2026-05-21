@@ -286,7 +286,7 @@ gitlab:
     edition: ce
 
     hosts:
-      domain: lab.mpopov.net
+      domain: lab.mpopov.net  
       https: true
       ssh: gitlab-ssh.lab.mpopov.net
       registry:
@@ -302,7 +302,7 @@ gitlab:
         namespace: networking
       installEnvoy: false
       configureCertmanager: false
-      httpToHttpsRedirect: false
+      httpToHttpsRedirect: false # envoy setting
   
     psql:
       host: gitlab-db-rw.gitlab.svc.cluster.local
