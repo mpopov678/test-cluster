@@ -293,7 +293,7 @@ gitlab:
         enabled: false
     
     shell:
-      port: 2222
+      port: 22
 
     ingress:
       enabled: false
@@ -361,6 +361,8 @@ gitlab:
       tls:
         enabled: false
     gitlab-shell:
+      service:
+        type: LoadBalancer
       gatewayRoute:
         sectionName: null
   minio:
