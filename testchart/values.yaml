@@ -288,7 +288,7 @@ gitlab:
     hosts:
       domain: lab.mpopov.net  
       https: true
-      ssh: lab.mpopov.net
+      ssh: gitlab-ssh.lab.mpopov.net
       registry:
         enabled: false
     
