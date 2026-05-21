@@ -289,8 +289,8 @@ gitlab:
       domain: lab.mpopov.net  
       https: true
       ssh: gitlab-ssh.lab.mpopov.net # seperate hostname for ssh since its using a different IP
-      registry:
-        enabled: false
+      # registry:
+      #   enabled: false
 
     ingress:
       enabled: false
@@ -340,12 +340,12 @@ gitlab:
   workhorse:
     tls:
       enabled: false
-  registry:
-    gatewayRoute:
-    # disabling sectionname for routes since it will choose correct listener by default
-      sectionName: null 
-    tls:
-      enabled: false
+  # registry:
+  #   gatewayRoute:
+  #   # disabling sectionname for routes since it will choose correct listener by default
+  #     sectionName: null 
+    # tls:
+    #   enabled: false
   cell:
     topologyServiceClient:
       tls:
@@ -353,18 +353,18 @@ gitlab:
   gitlab:
     webservice:
       gatewayRoute:
-        sectionName: null
+        sectionName: "https"
     kas:
       gatewayRoute:
-        sectionName: null
+        sectionName: "https"
       tls:
         enabled: false
     # using type load balancer because could not get ciluim gateway to accept ssh tcproute
     gitlab-shell:
       service:
         type: LoadBalancer
-      gatewayRoute:
-        sectionName: null
+      # gatewayRoute:
+      #   sectionName: null
 
   installCertmanager: false
   certmanager-issuer:
