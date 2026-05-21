@@ -373,19 +373,25 @@ gitlab:
   nginx-ingress:
     enabled: false
 
-minio:
-  objectStore:
-    pools:
-      - servers: 1
-        name: pool-0
-        volumesPerServer: 1
-        size: 10Gi
-    services:
-      console:
-        # name: minio-console
-        serviceType: ClusterIP
-      minio:
-        # name: minio
-        serviceType: ClusterIP
+rustfs:
+  replicaCount: 1
+  
+  mode:
+    standalone:
+      enabled: true
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 0
+          maxUnavailable: 1
+      existingClaim:
+        dataClaim: ""
+        logsClaim: ""
+    distributed:
+      enabled: false
+  
+  ingress:
+    enabled: true
 
-minioConfigs:
+  storageclass:
+    name: sc1
