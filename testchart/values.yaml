@@ -290,7 +290,7 @@ gitlab:
       https: true
       ssh: gitlab-ssh.lab.mpopov.net
       registry:
-        protocol: http
+        enabled: false
 
     ingress:
       enabled: false
@@ -316,6 +316,16 @@ gitlab:
       host: valkey.valkey.svc.cluster.local
       auth:
         enabled: false
+
+    minio:
+      enabled: false
+
+    appConfig:
+      object_store:
+        enabled: true
+        connection:
+          secret: gitlab-rustfs-connection
+          key: connection
 
   gitlab-runner:
     gitlabUrl: "https://gitlab.lab.mpopov.net/"
@@ -372,6 +382,10 @@ gitlab:
 
   nginx-ingress:
     enabled: false
+
+  registry:
+    enabled: false
+
 
 rustfs:
   
