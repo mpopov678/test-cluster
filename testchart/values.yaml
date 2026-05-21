@@ -288,9 +288,12 @@ gitlab:
     hosts:
       domain: lab.mpopov.net  
       https: true
-      ssh: gitlab-ssh.lab.mpopov.net
+      ssh: lab.mpopov.net
       registry:
         enabled: false
+    
+    shell:
+      port: 2222
 
     ingress:
       enabled: false
