@@ -11,6 +11,7 @@ spec:
     kind: Gateway
     name: eg
     namespace: networking
+    sectionName: https
   rules:
   - backendRefs:
     - group: ""
