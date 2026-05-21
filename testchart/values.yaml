@@ -340,12 +340,13 @@ gitlab:
   workhorse:
     tls:
       enabled: false
-  # registry:
-  #   gatewayRoute:
-  #   # disabling sectionname for routes since it will choose correct listener by default
-  #     sectionName: null 
-    # tls:
-    #   enabled: false
+  registry:
+    enabled: true
+    gatewayRoute:
+    # disabling sectionname for routes since it will choose correct listener by default
+      sectionName: "https" 
+    tls:
+      enabled: false
   cell:
     topologyServiceClient:
       tls:
@@ -387,8 +388,6 @@ gitlab:
   nginx-ingress:
     enabled: false
 
-  registry:
-    enabled: false
 
 
 rustfs:
