@@ -382,7 +382,7 @@ minio:
         size: 10Gi
     services:
       console:
-        name: myminio-console
+        name: minio-console
         serviceType: ClusterIP
 
 minioConfigs:
