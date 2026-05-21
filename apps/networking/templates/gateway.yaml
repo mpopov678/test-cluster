@@ -37,5 +37,5 @@ spec:
       namespaces:
         from: All
     name: tcp
-    port: 22
+    port: 2222
     protocol: TCP
