@@ -481,7 +481,7 @@ velero:
   # Init containers to add to the Velero deployment's pod spec. At least one plugin provider image is required.
   # If the value is a string then it is evaluated as a template.
 
-    # volumeSnapshotLocation:
+    volumeSnapshotLocation: []
     #   # name is the name of the volume snapshot location where snapshots are being taken. If a name is not provided,
     #   # a volume snapshot location will be created with the name "default". Optional.
     # - name:
