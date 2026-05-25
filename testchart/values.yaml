@@ -455,11 +455,11 @@ velero:
       # accessMode determines if velero can write to this backup storage location. Optional.
       # default to ReadWrite, ReadOnly is used during migrations and restores.
       accessMode: ReadWrite
-      credential:
-        # name of the secret used by this backupStorageLocation.
-        name: 
-        # name of key that contains the secret data to be used.
-        key:
+      # credential:
+      #   # name of the secret used by this backupStorageLocation.
+      #   name: 
+      #   # name of key that contains the secret data to be used.
+      #   key:
       defaultVolumesToFsBackup: true
 
       config: 
@@ -512,3 +512,4 @@ velero:
        aws_secret_access_key=<REDACTED>
     # additional key/value pairs to be used as environment variables such as "DIGITALOCEAN_TOKEN: <your-key>". Values will be stored in the secret.
     deployNodeAgent: true
+    snapshotsEnabled: false
