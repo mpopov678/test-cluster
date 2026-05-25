@@ -480,6 +480,21 @@ velero:
           #  insecureSkipTLSVerify:
   # Init containers to add to the Velero deployment's pod spec. At least one plugin provider image is required.
   # If the value is a string then it is evaluated as a template.
+
+    # volumeSnapshotLocation:
+    #   # name is the name of the volume snapshot location where snapshots are being taken. If a name is not provided,
+    #   # a volume snapshot location will be created with the name "default". Optional.
+    # - name:
+    #   # provider is the name for the volume snapshot provider.
+    #   provider: ""
+    #   credential:
+    #     # name of the secret used by this volumeSnapshotLocation.
+    #     name:
+    #     # name of key that contains the secret data to be used.
+    #     key:
+    #   # Additional provider-specific configuration. See link above
+    #   # for details of required/optional fields for your provider.
+    #   config: {}
   initContainers:
     - name: velero-plugin-for-aws
       image: velero/velero-plugin-for-aws:v1.13.1
