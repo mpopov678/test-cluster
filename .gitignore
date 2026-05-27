@@ -1,3 +1,4 @@
 old
 apps/gitea
 testchart/templates/gitea.yaml
+Projects/.env
