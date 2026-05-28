@@ -1,37 +1,46 @@
-import sys, requests, socket, os
+import sys, requests, socket, os, dns.resolver
 from azure.identity import DefaultAzureCredential
 from azure.mgmt.dns import DnsManagementClient
-
 from dotenv import load_dotenv
 load_dotenv()
 technitium_api_token = os.getenv("technitium_api_token")
 subscription_id = os.getenv("subscription_id")
+rdict = {}
 
-def get_azure_a_records(resource_group_name: str, zone_name: str):
-
-    dns_store = {}
-    credentials = DefaultAzureCredential()
-    dns_client = DnsManagementClient(credentials, subscription_id)
-
+def get_azure_records(resource_group_name: str, zone_name: str):
+    dns_client = DnsManagementClient(DefaultAzureCredential(), subscription_id)
     record_sets = dns_client.record_sets.list_by_dns_zone(
         resource_group_name=resource_group_name,
         zone_name=zone_name,
     )
 
-    for record in record_sets:
-        if record.type.split('/')[-1] == 'A':
-            try:
-                ipaddr = socket.gethostbyname(record.fqdn)
-            except:
-                ipaddr = "n/a"
-            dns_store[record.name] = {
-                "name": record.name,
-                "type": record.type.split('/')[-1],
-                "ip": ipaddr
-            }
+    supported_types = ["A", "CNAME", "TXT", "CAA", "SRV", "MX"]
 
-    print(dns_store)            
-    return dns_store
+    for record in record_sets:
+        rtype = record.type.split('/')[-1]
+        print(f"{'-'*40}\n{record.fqdn}\n{rtype}")
+        
+        rdict[record.fqdn] = {
+            'fqdn': record.fqdn,
+            'type': rtype,
+            'values': []
+        }
+
+        if rtype in supported_types:
+            try:
+                answer = dns.resolver.resolve(record.fqdn, rtype)
+                for rdata in answer:
+                    # to_text() automatically formats the output correctly for A, MX, TXT, etc.
+                    print(rdata.to_text())
+                    rdict[record.fqdn]['values'].append(rdata.to_text())
+            except dns.exception.DNSException:
+                pass
+
+    print(rdict['kenwavesolutions.com.'])
+
+
+def get_technitium_records():
+
 
 def get_technitium_a_records():
 
@@ -84,9 +93,10 @@ def add_technitium_records(RECORDS_TO_ADD):
 if __name__ == "__main__":
     
     RESOURCE_GROUP = "Pipesonik_Resources" 
-    ZONE_NAME = "infra.kenwavesolutions.com"
-    RECORDS_TO_ADD = get_azure_a_records(RESOURCE_GROUP,ZONE_NAME)
+    ZONE_NAME = "kenwavesolutions.com"
+    # RECORDS_TO_ADD = get_azure_a_records(RESOURCE_GROUP,ZONE_NAME)
 
     # get_technitium_a_records()
     # get_azure_a_records(RESOURCE_GROUP,ZONE_NAME)
-    add_technitium_records(RECORDS_TO_ADD)    
+    # add_technitium_records(RECORDS_TO_ADD)    
+    get_azure_records(RESOURCE_GROUP,ZONE_NAME)
