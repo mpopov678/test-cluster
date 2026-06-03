@@ -8,12 +8,12 @@ metadata:
 spec:
   project: default
   source:
-    - repoURL: https://github.com/mpopov678/test-cluster.git
-      path: apps/documentation
-      targetRevision: HEAD
-      helm:
-        values: |
-          {{- toYaml .Values.documentation | nindent 10 }}
+    repoURL: https://github.com/mpopov678/test-cluster.git
+    path: apps/documentation
+    targetRevision: HEAD
+    helm:
+      values: |
+        {{- toYaml .Values.documentation | nindent 10 }}
 
   destination:
     server: https://kubernetes.default.svc
