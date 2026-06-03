@@ -29,6 +29,7 @@ spec:
       # and a script that runs 'git pull && npx quartz build' when changes occur.
       - name: wiki-builder
         image: harbor.lab.mpopov.net/library/documentation:quartz-builder
+        imagePullPolicy: Always
         env:
         - name: REPO_URL
           value: "https://github.com/mpopov678/docu"
