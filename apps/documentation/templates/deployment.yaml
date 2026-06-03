@@ -23,6 +23,8 @@ spec:
         volumeMounts:
         - name: html-storage
           mountPath: /usr/share/nginx/html # Serves directly from the shared volume
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
 
       # --- Container 2: Git Sync and Auto-Builder (Sidecar) ---
       # Note: For production, you'll create a custom image containing Node/Quartz 
@@ -42,6 +44,9 @@ spec:
       volumes:
       - name: html-storage
         emptyDir: {} # Ephemeral shared memory between the two containers
+      - name: nginx-config
+        configMap:
+          name: wiki-nginx-config
 ---
 apiVersion: v1
 kind: Service
