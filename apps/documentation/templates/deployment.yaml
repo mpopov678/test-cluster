@@ -28,7 +28,7 @@ spec:
       # Note: For production, you'll create a custom image containing Node/Quartz 
       # and a script that runs 'git pull && npx quartz build' when changes occur.
       - name: wiki-builder
-        image: my-registry.internal/quartz-builder:latest
+        image: harbor.lab.mpopov.net/library/documentation:quartz-builder
         env:
         - name: REPO_URL
           value: "https://github.com/mpopov678/docu"
