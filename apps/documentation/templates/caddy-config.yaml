@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: caddy-config
+  namespace: documentation
+data:
+  Caddyfile: |
+    docu.lab.mpopov.net {
+        root * /usr/share/caddy
+        
+        # Fallback mechanism to handle Quartz clean URLs
+        try_files {path} {path}.html {path}/
+        
+        file_server
+    }
