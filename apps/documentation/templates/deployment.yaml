@@ -34,7 +34,7 @@ spec:
               port: 80
           volumeMounts:
           - name: shared-data
-            mountPath: /var/www/html
+            mountPath: /srv
 ---
 apiVersion: v1
 kind: Service
