@@ -24,8 +24,8 @@ spec:
           - name: shared-data
             mountPath: /quartz/shared
 
-        - name: nginx
-          image: nginx
+        - name: caddy
+          image: caddy
           ports: 
             - containerPort: 80
           readinessProbe:
@@ -34,7 +34,7 @@ spec:
               port: 80
           volumeMounts:
           - name: shared-data
-            mountPath: /usr/share/nginx/html
+            mountPath: /srv
 ---
 apiVersion: v1
 kind: Service
