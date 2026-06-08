@@ -22,7 +22,7 @@ spec:
           image: harbor.lab.mpopov.net/library/documentation:quartz-builder
           volumeMounts:
           - name: shared-data
-            mountPath: /quartz/public
+            mountPath: /quartz/shared
 
         - name: nginx
           image: nginx
