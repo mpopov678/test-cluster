@@ -35,6 +35,11 @@ spec:
           volumeMounts:
           - name: shared-data
             mountPath: /srv
+          command:
+            - caddy
+            - file-server
+            - --root
+            - /srv
 ---
 apiVersion: v1
 kind: Service
