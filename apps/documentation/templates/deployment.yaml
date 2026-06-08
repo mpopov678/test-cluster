@@ -1,63 +1,50 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: internal-wiki
+  name: quartz-docs
   namespace: documentation
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wiki
+      app: quartz-docs
   template:
     metadata:
       labels:
-        app: wiki
+        app: quartz-docs
     spec:
-      containers:
-      # --- Container 1: The Web Server ---
-      - name: web-server
-        image: nginx:alpine
-        ports:
-        - containerPort: 80
-          name: http
-        volumeMounts:
-        - name: html-storage
-          mountPath: /usr/share/nginx/html # Serves directly from the shared volume
-        - name: nginx-config
-          mountPath: /etc/nginx/conf.d
-
-      # --- Container 2: Git Sync and Auto-Builder (Sidecar) ---
-      # Note: For production, you'll create a custom image containing Node/Quartz 
-      # and a script that runs 'git pull && npx quartz build' when changes occur.
-      - name: wiki-builder
-        image: harbor.lab.mpopov.net/library/documentation:quartz-builder
-        imagePullPolicy: Always
-        env:
-        - name: REPO_URL
-          value: "https://github.com/mpopov678/docu"
-        - name: SYNC_INTERVAL
-          value: "300" # Auto-pull and rebuild every 5 minutes
-        volumeMounts:
-        - name: html-storage
-          mountPath: /data/public
-
       volumes:
-      - name: html-storage
-        emptyDir: {} # Ephemeral shared memory between the two containers
-      - name: nginx-config
-        configMap:
-          name: wiki-nginx-config
+        - name: shared-data
+          emptyDir: {}
+
+      containers:
+        - name: quartz
+          image: harbor.lab.mpopov.net/library/documentation:quartz-builder
+          volumeMounts:
+          - name: shared-data
+            mountPath: /quartz/public
+
+        - name: nginx
+          image: nginx
+          ports: 
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+          volumeMounts:
+          - name: shared-data
+            mountPath: /usr/share/nginx/html
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: wiki-service
+  name: quartz-docs
   namespace: documentation
 spec:
-  ports:
-  - port: 80
-    targetPort: http
-    protocol: TCP
-    name: http
   selector:
-    app: wiki
+    app: quartz-docs
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
