@@ -13,9 +13,13 @@ spec:
       labels:
         app: quartz-docs
     spec:
+
       volumes:
         - name: shared-data
           emptyDir: {}
+        - name: caddy-config
+          configMap:
+            name: caddy-config
 
       containers:
         - name: quartz
@@ -35,6 +39,9 @@ spec:
           volumeMounts:
           - name: shared-data
             mountPath: /usr/share/caddy
+          - name: caddy-config
+            mountPath: /etc/caddy/Caddyfile
+
 ---
 apiVersion: v1
 kind: Service

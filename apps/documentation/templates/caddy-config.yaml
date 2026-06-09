@@ -8,7 +8,6 @@ data:
     docu.lab.mpopov.net {
         root * /usr/share/caddy
         
-        # Fallback mechanism to handle Quartz clean URLs
         try_files {path} {path}.html {path}/
         
         file_server
