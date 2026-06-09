@@ -5,7 +5,7 @@ metadata:
   namespace: documentation
 data:
   Caddyfile: |
-    docu.lab.mpopov.net {
+    :80 {
         root * /usr/share/caddy
         
         try_files {path} {path}.html {path}/
