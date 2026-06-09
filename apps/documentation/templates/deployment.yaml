@@ -40,7 +40,7 @@ spec:
           - name: shared-data
             mountPath: /usr/share/caddy
           - name: caddy-config
-            mountPath: /etc/caddy/Caddyfile
+            mountPath: /etc/caddy
 
 ---
 apiVersion: v1
