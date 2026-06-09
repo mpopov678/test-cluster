@@ -24,6 +24,7 @@ spec:
       containers:
         - name: quartz
           image: harbor.lab.mpopov.net/library/documentation:quartz-builder
+          imagePullPolicy: Always
           volumeMounts:
           - name: shared-data
             mountPath: /quartz/shared
