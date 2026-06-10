@@ -33,7 +33,7 @@ spec:
           - name: shared-data
             mountPath: /quartz/shared
           - name: github-token
-            mounthPath: /quartz/secret
+            mountPath: /quartz/secret
 
         - name: caddy
           image: caddy
