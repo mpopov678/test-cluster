@@ -20,6 +20,10 @@ spec:
         - name: caddy-config
           configMap:
             name: caddy-config
+        - name: github-token
+          secret:
+            secretName: github-token
+
 
       containers:
         - name: quartz
@@ -28,6 +32,8 @@ spec:
           volumeMounts:
           - name: shared-data
             mountPath: /quartz/shared
+          - name: github-token
+            mounthPath: /quartz/secret
 
         - name: caddy
           image: caddy
