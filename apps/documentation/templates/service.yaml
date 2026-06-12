@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: quartz-docs
+  namespace: documentation
+spec:
+  selector:
+    app: quartz-docs
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quartz-webhook
+  namespace: documentation
+spec:
+  selector:
+    app: quartz-docs
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9000
