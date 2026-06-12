@@ -5,7 +5,7 @@ metadata:
   namespace: documentation
 data:
   Caddyfile: |
-    :80 {
+    :8080 {
         root * /usr/share/caddy
         
         try_files {path} {path}.html {path}/
