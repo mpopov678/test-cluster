@@ -29,10 +29,12 @@ spec:
         - name: quartz
           image: harbor.lab.mpopov.net/library/documentation:quartz-builder
           imagePullPolicy: Always
+          ports: 
+            - containerPort: 9000
           volumeMounts:
           - name: shared-data
             mountPath: /quartz/shared
-          - name: github-token
+          - name: gitlab-token
             mountPath: /quartz/secret
 
         - name: caddy
@@ -48,17 +50,3 @@ spec:
             mountPath: /usr/share/caddy
           - name: caddy-config
             mountPath: /etc/caddy
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: quartz-docs
-  namespace: documentation
-spec:
-  selector:
-    app: quartz-docs
-  ports:
-    - name: http
-      port: 80
-      targetPort: 80
