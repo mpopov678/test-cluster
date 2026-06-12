@@ -23,6 +23,9 @@ spec:
         - name: github-token
           secret:
             secretName: github-token
+        - name: gitlab-token
+          secret:
+            secretName: gitlab-token
 
 
       containers:
