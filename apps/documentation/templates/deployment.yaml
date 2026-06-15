@@ -44,9 +44,6 @@ spec:
           image: caddy
           ports: 
             - containerPort: 8080
-          readinessProbe:
-            tcpSocket:
-              port: 8080
           volumeMounts:
           - name: shared-data
             mountPath: /usr/share/caddy
