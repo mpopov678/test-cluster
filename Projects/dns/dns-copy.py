@@ -35,6 +35,18 @@ def get_azure_records(resource_group_name: str, zone_name: str):
 
     return(azure_rdict)
 
+def clean_azure_txt_records(AZURE_RECORDS):
+    combined_txt_dict = {
+        'fqdn' : ''
+    }
+    for record in AZURE_RECORDS.values():
+        if record['type'] == 'TXT':
+            print(record)
+            combined_txt_dict.add(record['fqdn'], {
+                    'fqdn': record['fqdn'],
+                    'type': record['type'],
+                    'value': record['value']
+                })
 
 def get_technitium_records(zone_name: str):
     url = "http://192.168.88.2:5380/api/zones/records/get"
@@ -108,7 +120,6 @@ def add_technitium_records(AZURE_RECORDS):
         elif record['type'] == 'TXT':
             params['text'] = record['value']
             params['splitText'] = "true"
-            # print(params)
 
         elif record['type'] == 'CAA':
             print(params)
@@ -144,4 +155,6 @@ if __name__ == "__main__":
     # get_azure_a_records(RESOURCE_GROUP,ZONE_NAME)
     # add_technitium_records(get_azure_records(RESOURCE_GROUP,ZONE_NAME))    
     # get_azure_records(RESOURCE_GROUP,ZONE_NAME)
-    add_technitium_records(AZURE_RECORDS)
+    # add_technitium_records(AZURE_RECORDS)
+
+    clean_azure_txt_records(AZURE_RECORDS)
