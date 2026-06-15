@@ -1,11 +1,17 @@
 FROM node:26
 
-RUN git clone https://github.com/jackyzha0/quartz.git 
-WORKDIR /quartz 
-RUN npm i
-RUN npx quartz create -t default -X new -s /docu -l shortest -b docu.lab.mpopov.net
+RUN apt-get update && apt-get install -y webhook
 
-COPY test.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+WORKDIR /usr/src/app
 
-ENTRYPOINT ["/entrypoint.sh"]
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+COPY hooks.json .
+
+COPY redeploy.sh .
+RUN chmod +x redeploy.sh
+
+RUN git clone https://github.com/jackyzha0/quartz.git /quartz
+
+ENTRYPOINT ["./entrypoint.sh"]
