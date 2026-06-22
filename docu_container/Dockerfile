@@ -1,6 +1,6 @@
 FROM node:26
 
-RUN apt-get update && apt-get install -y webhook
+RUN apt-get update && apt-get install -y webhook && apt-get install -y rsync
 
 WORKDIR /usr/src/app
 
