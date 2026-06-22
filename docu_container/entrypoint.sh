@@ -15,4 +15,4 @@ cp -r public/* shared/
 
 cd /usr/src/app
 # start webhook service on default port 9000 with one http endpoint 
-webhook -hooks hooks.json
+exec webhook -hooks hooks.json
