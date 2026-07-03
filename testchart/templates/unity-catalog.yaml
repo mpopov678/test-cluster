@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: unity-catalog
+  namespace: argocd # must be where Argo CD is installed
+  annotations:
+    argocd.argoproj.io/sync-wave: "24"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mpopov678/test-cluster.git
+    path: apps/unity-catalog
+    targetRevision: HEAD
+    helm:
+      values: |
+        {{- toYaml .Values.unityCatalog | nindent 8 }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: unity-catalog
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

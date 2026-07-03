@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace | quote }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name | quote }}
+  namespace: {{ .Values.namespace | quote }}
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.name | quote }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.name | quote }}
+    spec:
+      containers:
+        - name: unity-catalog
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+{{ toYaml .Values.command | indent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.s3.secretName | quote }}
+          env:
+            - name: UC_WAREHOUSE
+              value: {{ .Values.warehouse | quote }}
+            - name: AWS_ENDPOINT_URL
+              value: {{ .Values.s3.endpoint | quote }}
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.s3.region | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name | quote }}
+  namespace: {{ .Values.namespace | quote }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ .Values.name | quote }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+{{- if .Values.route.enabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Values.route.name | quote }}
+  namespace: {{ .Values.namespace | quote }}
+spec:
+  hostnames:
+    - {{ .Values.route.hostname | quote }}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Values.route.gateway.name | quote }}
+      namespace: {{ .Values.route.gateway.namespace | quote }}
+      sectionName: {{ .Values.route.gateway.sectionName | quote }}
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ .Values.name | quote }}
+          port: {{ .Values.service.port }}
+{{- end }}

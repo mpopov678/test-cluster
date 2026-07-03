@@ -1,0 +1,4 @@
+sparkNamespace:
+  name: spark
+  labels:
+    spark-operator: enabled

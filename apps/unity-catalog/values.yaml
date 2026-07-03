@@ -1,0 +1,33 @@
+name: unity-catalog
+namespace: unity-catalog
+image:
+  repository: ghcr.io/unitycatalog/unitycatalog
+  tag: 0.4.1
+  pullPolicy: IfNotPresent
+replicaCount: 1
+command:
+  - /bin/sh
+  - -ec
+  - ./bin/start-uc-server
+warehouse: s3://warehouse/
+service:
+  port: 8080
+s3:
+  endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+  region: us-east-1
+  secretName: lakehouse-s3
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+route:
+  enabled: true
+  name: unity-catalog-httproute
+  hostname: unity-catalog.lab.mpopov.net
+  gateway:
+    name: eg
+    namespace: networking
+    sectionName: https

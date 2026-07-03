@@ -1,33 +1,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cloudnativepg
+  name: spark-operator
   namespace: argocd # must be where Argo CD is installed
   annotations:
-    argocd.argoproj.io/sync-wave: "05"
+    argocd.argoproj.io/sync-wave: "22"
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-
   sources:
-    - repoURL: https://cloudnative-pg.github.io/charts
-      targetRevision: v0.28.0
-      chart: cloudnative-pg
+    - repoURL: https://kubeflow.github.io/spark-operator
+      targetRevision: 2.5.1
+      chart: spark-operator
       helm:
+        releaseName: spark-operator
         values: |
-          {{- toYaml .Values.cloudnativepg | nindent 10 }}
+          {{- toYaml .Values.sparkOperator | nindent 10 }}
 
     - repoURL: https://github.com/mpopov678/test-cluster.git
-      path: apps/cloudnativepg
+      path: apps/spark-operator
       targetRevision: HEAD
       helm:
         values: |
-          {{- toYaml .Values.cloudnativepgConfigs | nindent 10 }}
+          {{- toYaml .Values.sparkOperatorConfigs | nindent 10 }}
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: cnpg-system
+    namespace: spark-operator
   syncPolicy:
     automated:
       prune: true

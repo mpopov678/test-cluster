@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace | quote }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.config.secretName | quote }}
+  namespace: {{ .Values.namespace | quote }}
+type: Opaque
+stringData:
+{{ toYaml .Values.config.data | indent 2 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name | quote }}
+  namespace: {{ .Values.namespace | quote }}
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.name | quote }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.name | quote }}
+    spec:
+      containers:
+        - name: delta-sharing
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --config
+            - {{ printf "%s/%s" .Values.config.mountPath .Values.config.fileName | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: {{ .Values.config.mountPath | quote }}
+              readOnly: true
+      volumes:
+        - name: config
+          secret:
+            secretName: {{ .Values.config.secretName | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name | quote }}
+  namespace: {{ .Values.namespace | quote }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ .Values.name | quote }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+{{- if .Values.route.enabled }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Values.route.name | quote }}
+  namespace: {{ .Values.namespace | quote }}
+spec:
+  hostnames:
+    - {{ .Values.route.hostname | quote }}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Values.route.gateway.name | quote }}
+      namespace: {{ .Values.route.gateway.namespace | quote }}
+      sectionName: {{ .Values.route.gateway.sectionName | quote }}
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ .Values.name | quote }}
+          port: {{ .Values.service.port }}
+{{- end }}

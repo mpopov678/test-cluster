@@ -1,33 +1,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cloudnativepg
+  name: superset
   namespace: argocd # must be where Argo CD is installed
   annotations:
-    argocd.argoproj.io/sync-wave: "05"
+    argocd.argoproj.io/sync-wave: "28"
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-
   sources:
-    - repoURL: https://cloudnative-pg.github.io/charts
-      targetRevision: v0.28.0
-      chart: cloudnative-pg
+    - repoURL: https://apache.github.io/superset
+      targetRevision: 0.15.5
+      chart: superset
       helm:
+        releaseName: superset
         values: |
-          {{- toYaml .Values.cloudnativepg | nindent 10 }}
+          {{- toYaml .Values.superset | nindent 10 }}
 
     - repoURL: https://github.com/mpopov678/test-cluster.git
-      path: apps/cloudnativepg
+      path: apps/superset
       targetRevision: HEAD
       helm:
         values: |
-          {{- toYaml .Values.cloudnativepgConfigs | nindent 10 }}
+          {{- toYaml .Values.supersetConfigs | nindent 10 }}
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: cnpg-system
+    namespace: superset
   syncPolicy:
     automated:
       prune: true

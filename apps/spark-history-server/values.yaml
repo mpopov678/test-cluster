@@ -1,0 +1,33 @@
+name: spark-history-server
+namespace: spark
+namespaceLabels:
+  spark-operator: enabled
+image:
+  repository: apache/spark
+  tag: 4.1.2
+  pullPolicy: IfNotPresent
+replicaCount: 1
+service:
+  port: 18080
+spark:
+  eventLogDirectory: s3a://spark-events/
+s3:
+  endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+  pathStyleAccess: "true"
+  sslEnabled: "false"
+  secretName: lakehouse-s3
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+route:
+  enabled: true
+  name: spark-history-httproute
+  hostname: spark-history.lab.mpopov.net
+  gateway:
+    name: eg
+    namespace: networking
+    sectionName: https

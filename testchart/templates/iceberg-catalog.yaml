@@ -1,33 +1,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cloudnativepg
+  name: iceberg-catalog
   namespace: argocd # must be where Argo CD is installed
   annotations:
-    argocd.argoproj.io/sync-wave: "05"
+    argocd.argoproj.io/sync-wave: "24"
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-
   sources:
-    - repoURL: https://cloudnative-pg.github.io/charts
-      targetRevision: v0.28.0
-      chart: cloudnative-pg
+    - repoURL: https://charts.projectnessie.org
+      targetRevision: 0.108.0
+      chart: nessie
       helm:
+        releaseName: iceberg-catalog
         values: |
-          {{- toYaml .Values.cloudnativepg | nindent 10 }}
+          {{- toYaml .Values.icebergCatalog | nindent 10 }}
 
     - repoURL: https://github.com/mpopov678/test-cluster.git
-      path: apps/cloudnativepg
+      path: apps/iceberg-catalog
       targetRevision: HEAD
       helm:
         values: |
-          {{- toYaml .Values.cloudnativepgConfigs | nindent 10 }}
+          {{- toYaml .Values.icebergCatalogConfigs | nindent 10 }}
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: cnpg-system
+    namespace: iceberg
   syncPolicy:
     automated:
       prune: true
