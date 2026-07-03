@@ -640,6 +640,13 @@ sparkHistoryServer:
     limits:
       cpu: "1"
       memory: 1Gi
+
+  hadoopAws:
+    enabled: true
+    downloaderImage: busybox:1.36
+    jars:
+      - https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.1/hadoop-aws-3.4.1.jar
+      - https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.720/aws-java-sdk-bundle-1.12.720.jar
   route:
     enabled: true
     name: spark-history-httproute
