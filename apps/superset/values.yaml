@@ -1,0 +1,11 @@
+namespace: superset
+route:
+  enabled: true
+  name: superset-httproute
+  hostname: superset.lab.mpopov.net
+  serviceName: superset
+  servicePort: 8088
+  gateway:
+    name: eg
+    namespace: networking
+    sectionName: https

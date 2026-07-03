@@ -528,3 +528,442 @@ velero:
     # additional key/value pairs to be used as environment variables such as "DIGITALOCEAN_TOKEN: <your-key>". Values will be stored in the secret.
     deployNodeAgent: true
     snapshotsEnabled: false
+
+# Data lake port from deployment/k8s/base/100-DataLake for the testrepo cluster.
+lakehousePostgres:
+  instances: 1
+  storage:
+    size: 10Gi
+  clusters:
+    - name: nessie-db
+      namespace: iceberg
+      database: nessie
+      owner: nessie
+      secretName: nessie-db-app
+    - name: superset-db
+      namespace: superset
+      database: superset
+      owner: superset
+      secretName: superset-db-app
+
+lakehouseStorage:
+  namespace: lakehouse
+  s3:
+    endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+    secretName: lakehouse-s3
+  buckets:
+    configMapName: lakehouse-buckets
+    names:
+      - warehouse
+      - spark-events
+      - mlflow-artifacts
+      - delta-sharing
+      - landing
+  bucketJob:
+    enabled: true
+    name: lakehouse-storage-buckets
+    image: quay.io/minio/mc:RELEASE.2026-05-16T02-05-47Z
+    backoffLimit: 3
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+
+sparkOperator:
+  controller:
+    replicas: 1
+    workers: 4
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+  webhook:
+    enable: true
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  spark:
+    jobNamespaces:
+      - spark
+    jobNamespaceSelector: spark-operator=enabled
+    serviceAccount:
+      create: true
+      name: spark
+    rbac:
+      create: true
+  prometheus:
+    metrics:
+      enable: true
+    podMonitor:
+      create: false
+
+sparkOperatorConfigs:
+  sparkNamespace:
+    name: spark
+    labels:
+      spark-operator: enabled
+
+sparkHistoryServer:
+  name: spark-history-server
+  namespace: spark
+  namespaceLabels:
+    spark-operator: enabled
+  image:
+    repository: apache/spark
+    tag: 4.1.2
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    port: 18080
+  spark:
+    eventLogDirectory: s3a://spark-events/
+  s3:
+    endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+    pathStyleAccess: "true"
+    sslEnabled: "false"
+    secretName: lakehouse-s3
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  route:
+    enabled: true
+    name: spark-history-httproute
+    hostname: spark-history.lab.mpopov.net
+    gateway:
+      name: eg
+      namespace: networking
+      sectionName: https
+
+unityCatalog:
+  name: unity-catalog
+  namespace: unity-catalog
+  image:
+    repository: ghcr.io/unitycatalog/unitycatalog
+    tag: 0.4.1
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  command:
+    - /bin/sh
+    - -ec
+    - ./bin/start-uc-server
+  warehouse: s3://warehouse/
+  service:
+    port: 8080
+  s3:
+    endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+    region: us-east-1
+    secretName: lakehouse-s3
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  route:
+    enabled: true
+    name: unity-catalog-httproute
+    hostname: unity-catalog.lab.mpopov.net
+    gateway:
+      name: eg
+      namespace: networking
+      sectionName: https
+
+icebergCatalog:
+  fullnameOverride: iceberg-catalog
+  replicaCount: 1
+  versionStoreType: JDBC2
+  jdbc:
+    jdbcUrl: jdbc:postgresql://nessie-db-rw.iceberg.svc.cluster.local:5432/nessie?sslmode=require
+    secret:
+      name: nessie-db-app
+      username: username
+      password: password
+  catalog:
+    enabled: true
+    iceberg:
+      defaultWarehouse: warehouse
+      warehouses:
+        - name: warehouse
+          location: s3://warehouse/
+      configDefaults:
+        s3.endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+        s3.path-style-access: "true"
+        s3.region: us-east-1
+    storage:
+      s3:
+        defaultOptions:
+          region: us-east-1
+          endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+          pathStyleAccess: true
+          authType: STATIC
+          accessKeySecret:
+            name: lakehouse-s3
+            awsAccessKeyId: AWS_ACCESS_KEY_ID
+            awsSecretAccessKey: AWS_SECRET_ACCESS_KEY
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  serviceMonitor:
+    enabled: false
+
+icebergCatalogConfigs:
+  namespace: iceberg
+  route:
+    enabled: true
+    name: iceberg-catalog-httproute
+    hostname: iceberg-catalog.lab.mpopov.net
+    serviceName: iceberg-catalog
+    servicePort: 19120
+    gateway:
+      name: eg
+      namespace: networking
+      sectionName: https
+
+deltaSharing:
+  name: delta-sharing
+  namespace: delta-sharing
+  image:
+    repository: deltaio/delta-sharing-server
+    tag: 1.4.0
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    port: 8080
+  config:
+    secretName: delta-sharing-config
+    mountPath: /etc/delta-sharing
+    fileName: server.yaml
+    data:
+      server.yaml: |
+        shares: []
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  route:
+    enabled: true
+    name: delta-sharing-httproute
+    hostname: delta-sharing.lab.mpopov.net
+    gateway:
+      name: eg
+      namespace: networking
+      sectionName: https
+
+trino:
+  fullnameOverride: trino
+  server:
+    workers: 2
+    config:
+      query:
+        maxMemory: 12GB
+  coordinator:
+    jvm:
+      maxHeapSize: 2G
+    config:
+      memory:
+        heapHeadroomPerNode: 512MB
+      query:
+        maxMemoryPerNode: 1GB
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "2"
+        memory: 3Gi
+    annotations:
+      reloader.stakater.com/auto: "true"
+  worker:
+    jvm:
+      maxHeapSize: 4G
+    config:
+      memory:
+        heapHeadroomPerNode: 1GB
+      query:
+        maxMemoryPerNode: 3GB
+    resources:
+      requests:
+        cpu: "2"
+        memory: 4Gi
+      limits:
+        cpu: "3"
+        memory: 6Gi
+    annotations:
+      reloader.stakater.com/auto: "true"
+  envFrom:
+    - secretRef:
+        name: lakehouse-s3
+  catalogs:
+    iceberg: |
+      connector.name=iceberg
+      iceberg.catalog.type=rest
+      iceberg.rest-catalog.uri=http://iceberg-catalog.iceberg.svc.cluster.local:19120/iceberg
+      iceberg.rest-catalog.warehouse=warehouse
+      fs.native-s3.enabled=true
+      s3.endpoint=http://rustfs-svc.rustfs.svc.cluster.local:9000
+      s3.region=us-east-1
+      s3.path-style-access=true
+      s3.aws-access-key=${ENV:AWS_ACCESS_KEY_ID}
+      s3.aws-secret-key=${ENV:AWS_SECRET_ACCESS_KEY}
+    delta: |
+      connector.name=delta_lake
+      hive.metastore=glue
+      fs.native-s3.enabled=true
+      s3.endpoint=http://rustfs-svc.rustfs.svc.cluster.local:9000
+      s3.region=us-east-1
+      s3.path-style-access=true
+      s3.aws-access-key=${ENV:AWS_ACCESS_KEY_ID}
+      s3.aws-secret-key=${ENV:AWS_SECRET_ACCESS_KEY}
+  serviceMonitor:
+    enabled: false
+
+trinoConfigs:
+  namespace: trino
+  route:
+    enabled: true
+    name: trino-httproute
+    hostname: trino.lab.mpopov.net
+    serviceName: trino
+    servicePort: 8080
+    gateway:
+      name: eg
+      namespace: networking
+      sectionName: https
+
+superset:
+  fullnameOverride: superset
+  postgresql:
+    enabled: false
+  redis:
+    enabled: false
+  secretEnv:
+    create: false
+  envFromSecret: superset-env
+  bootstrapScript: |
+    #!/bin/bash
+    pip install --no-cache-dir trino sqlalchemy-trino psycopg2-binary redis
+    if [ ! -f ~/bootstrap ]; then echo "Bootstrap complete" > ~/bootstrap; fi
+  configOverrides:
+    valkey_auth: |
+      import os
+      from flask_caching.backends.rediscache import RedisCache
+
+      REDIS_USER = os.getenv("REDIS_USER", "")
+      REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
+      REDIS_HOST = os.getenv("REDIS_HOST")
+      REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+      REDIS_PROTO = os.getenv("REDIS_PROTO", "redis")
+      REDIS_DB = os.getenv("REDIS_DB", "3")
+      REDIS_CELERY_DB = os.getenv("REDIS_CELERY_DB", "4")
+      REDIS_AUTH = f"{REDIS_USER}:{REDIS_PASSWORD}@" if REDIS_USER else (f":{REDIS_PASSWORD}@" if REDIS_PASSWORD else "")
+      CACHE_REDIS_URL = f"{REDIS_PROTO}://{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+      CELERY_REDIS_URL = f"{REDIS_PROTO}://{REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"
+
+      CACHE_CONFIG = {
+          "CACHE_TYPE": "RedisCache",
+          "CACHE_DEFAULT_TIMEOUT": 300,
+          "CACHE_KEY_PREFIX": "superset_",
+          "CACHE_REDIS_URL": CACHE_REDIS_URL,
+      }
+      DATA_CACHE_CONFIG = CACHE_CONFIG
+
+      class CeleryConfig:
+          imports = ("superset.sql_lab",)
+          broker_url = CELERY_REDIS_URL
+          result_backend = CELERY_REDIS_URL
+
+      CELERY_CONFIG = CeleryConfig
+      RESULTS_BACKEND = RedisCache(
+          host=REDIS_HOST,
+          port=int(REDIS_PORT),
+          username=REDIS_USER or None,
+          password=REDIS_PASSWORD or None,
+          key_prefix="superset_results",
+      )
+  supersetNode:
+    replicas:
+      enabled: true
+      replicaCount: 1
+    connections:
+      db_type: postgresql
+      db_host: superset-db-rw.superset.svc.cluster.local
+      db_port: "5432"
+      db_user: superset
+      db_pass: ""
+      db_name: superset
+      redis_host: valkey.valkey.svc.cluster.local
+      redis_port: "6379"
+      redis_cache_db: "3"
+      redis_celery_db: "4"
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+    podAnnotations:
+      reloader.stakater.com/auto: "true"
+  supersetWorker:
+    replicas:
+      enabled: true
+      replicaCount: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+    podAnnotations:
+      reloader.stakater.com/auto: "true"
+  supersetCeleryBeat:
+    enabled: false
+  init:
+    createAdmin: false
+    loadExamples: false
+  extraConfigs:
+    import_datasources.yaml: |
+      databases:
+        - database_name: Trino Lakehouse
+          sqlalchemy_uri: trino://superset@trino.trino.svc.cluster.local:8080/iceberg
+          extra: '{"metadata_params":{},"engine_params":{},"metadata_cache_timeout":{},"schemas_allowed_for_file_upload":[]}'
+          allow_ctas: true
+          allow_cvas: true
+          allow_file_upload: false
+
+supersetConfigs:
+  namespace: superset
+  route:
+    enabled: true
+    name: superset-httproute
+    hostname: superset.lab.mpopov.net
+    serviceName: superset
+    servicePort: 8088
+    gateway:
+      name: eg
+      namespace: networking
+      sectionName: https

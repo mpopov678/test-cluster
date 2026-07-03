@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: spark-history-server
+  namespace: argocd # must be where Argo CD is installed
+  annotations:
+    argocd.argoproj.io/sync-wave: "23"
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mpopov678/test-cluster.git
+    path: apps/spark-history-server
+    targetRevision: HEAD
+    helm:
+      values: |
+        {{- toYaml .Values.sparkHistoryServer | nindent 8 }}
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: spark
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
