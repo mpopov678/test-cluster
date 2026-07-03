@@ -9,20 +9,13 @@ technitium_api_token = os.getenv("technitium_api_token")
 subscription_id = os.getenv("subscription_id")
 
 # SQLITE DB SETUP
-con = sqlite3.connect("/home/mpopov/testrepo/Projects/dns/tutorial.db")
+con = sqlite3.connect("/home/mpopov/testrepo/Projects/dns/bla.db")
 cur = con.cursor()
-cur.execute(f"CREATE TABLE azure(record_fqdn, record_type, record_value)")
-cur.execute(f"CREATE TABLE technitium(record_fqdn, record_type, record_value)")
+# cur.execute(f"CREATE TABLE azure(record_fqdn, record_type, record_value)")
+# cur.execute(f"CREATE TABLE technitium(record_fqdn, record_type, record_value)")
 
-# TECHNITIUM URL/ZONE TO ADD RECORDS
-url = "http://192.168.88.2:5380/api/zones/records/add"
-url2 = "http://192.168.88.2:5380/api/zones/records/get"
-# USED FOR BOTH TECHNITIUM/AZURE
-zone = "kenwavesolutions.com"
-resource_group_name = "Pipesonik_Resources"
 # DNS RESOLVER
 custom_resolver = dns.resolver.Resolver()
-custom_resolver.nameservers = ['8.8.8.8']
 
 def get_azure_records(resource_group_name, zone_name):
     """get iterable object containing record sets from a zone from Azure"""
@@ -33,13 +26,13 @@ def get_azure_records(resource_group_name, zone_name):
     )
     return record_sets
 
-def get_technitium_records(zone_name):
+def get_technitium_records(zone):
     params = {
             "token": technitium_api_token,
             'domain':zone,
             'listZone':True
     }
-    return requests.get(url2,params=params).json()
+    return requests.get(url_get,params=params).json()
 
 class AzureRecord:
     def __init__(self, record_type, record_fqdn):
@@ -66,6 +59,7 @@ class AzureRecord:
             return
         for value in answer:
             self.record_value.append(value.to_text())
+        self.record_value.sort()
 
     def add_record_to_table(self,table_name):
         cur.executemany(
@@ -78,9 +72,7 @@ class AzureRecord:
                 for value in self.record_value
             ]
         )
-
         con.commit()
-
 
 class A(AzureRecord):
     def build_params(self):
@@ -138,26 +130,35 @@ class MX(AzureRecord):
         self.params['preference'] = preference
 
 def main():
-    RECORD_CLASSES = {
-        "A": A,
-        "CNAME": CNAME,
-        "TXT": TXT,
-        "CAA": CAA,
-        "SRV": SRV,
-        "MX": MX,
-    }
+    RECORD_CLASSES = { "A": A, "CNAME": CNAME, "TXT": TXT, "CAA": CAA, "SRV": SRV, "MX": MX,}
+    
+    global zone, resource_group_name, url_add, url_get
+    zone = "kenwavesolutions.com"
+    resource_group_name = "Pipesonik_Resources"
+    technitium_ip = "192.168.88.2"
+    url_add = f"http://{technitium_ip}:5380/api/zones/records/add"
+    url_get = f"http://{technitium_ip}:5380/api/zones/records/get"
+
     azure_records = get_azure_records(resource_group_name,zone)
     for record in azure_records:
         record_type = record.type.split("/")[-1]
-        record_fqdn = record.fqdn
+        record_fqdn = record.fqdn.strip(".")
         record_class = RECORD_CLASSES.get(record_type)
         if record_class is None:
             continue
         
+        
+
         new_record = record_class(record_type,record_fqdn)
         new_record.get_record_value("8.8.8.8")
+
+        # print(new_record.record_fqdn,new_record.record_type)
         new_record.build_params()
-        new_record.add_record_to_table("azure")
+        print(new_record.params.values())
+
+        # new_record.add_record_to_table("azure")
+
+    print("-"*40)
 
     technitium_records = get_technitium_records(zone)
     for record in technitium_records["response"]["records"]:
@@ -166,10 +167,16 @@ def main():
         record_class = RECORD_CLASSES.get(record_type)
         if record_class is None:
             continue
+        
+
 
         new_record = record_class(record_type,record_fqdn)
         new_record.get_record_value("192.168.88.2")
-        new_record.build_params()
-        new_record.add_record_to_table("technitium")
-main()
 
+
+        # print(new_record.record_fqdn,new_record.record_type)
+        new_record.build_params()
+        print(new_record.params.values())
+        
+        # new_record.add_record_to_table("technitium")
+main()
