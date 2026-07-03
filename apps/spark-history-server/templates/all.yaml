@@ -35,12 +35,32 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .Values.name | quote }}
     spec:
+{{- if .Values.hadoopAws.enabled }}
+      initContainers:
+        - name: fetch-hadoop-aws-jars
+          image: {{ .Values.hadoopAws.downloaderImage | quote }}
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              for jar in {{ join " " .Values.hadoopAws.jars }}; do
+                wget -q -P /spark-jars-extra "$jar"
+              done
+          volumeMounts:
+            - name: spark-jars-extra
+              mountPath: /spark-jars-extra
+{{- end }}
       containers:
         - name: spark-history-server
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
-            - /opt/spark/sbin/start-history-server.sh
+            - /bin/sh
+            - -ec
+            - |
+              export SPARK_CLASSPATH="/opt/spark/jars-extra/*:${SPARK_CLASSPATH:-}"
+              exec /opt/spark/sbin/start-history-server.sh
           env:
             - name: SPARK_NO_DAEMONIZE
               value: "true"
@@ -63,10 +83,19 @@ spec:
             - name: spark-defaults
               mountPath: /opt/spark/conf/spark-defaults.conf
               subPath: spark-defaults.conf
+{{- if .Values.hadoopAws.enabled }}
+            - name: spark-jars-extra
+              mountPath: /opt/spark/jars-extra
+              readOnly: true
+{{- end }}
       volumes:
         - name: spark-defaults
           configMap:
             name: {{ .Values.name | quote }}
+{{- if .Values.hadoopAws.enabled }}
+        - name: spark-jars-extra
+          emptyDir: {}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
