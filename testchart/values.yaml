@@ -562,7 +562,7 @@ lakehouseStorage:
   bucketJob:
     enabled: true
     name: lakehouse-storage-buckets
-    image: quay.io/minio/mc:RELEASE.2026-05-16T02-05-47Z
+    image: quay.io/minio/mc:latest
     backoffLimit: 3
     resources:
       requests:
