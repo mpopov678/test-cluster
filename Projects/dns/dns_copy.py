@@ -110,6 +110,16 @@ class Record:
             if cur.fetchone() is None:
                 return False
         return True
+    
+    def add_values_to_technitium(self):
+        for value in self.record_value:
+            self.build_params(value)
+            self.add_record_to_technitium()
+
+    def del_values_from_technitium(self):
+        for value in self.record_value:
+            self.build_params(value)
+            self.del_record_from_technitium()
 
     def add_record_to_technitium(self):
         response = requests.get(url_add, params=self.params)
@@ -117,21 +127,18 @@ class Record:
             print(f"failed to add {self.record_fqdn} to technitium")
 
     def del_record_from_technitium(self):
+        print(f"Attempting to delete record: {self.record_fqdn}")
         response = requests.get(url_del, params=self.params)
         if not response.ok:
             print(f"failed to delete {self.record_fqdn} from technitium")
 
 class A(Record):
-    def build_params(self):
-        for value in self.record_value:
-            self.params["ipAddress"] = value
-            self.add_record_to_technitium()
+    def build_params(self,record_value):
+        self.params["ipAddress"] = record_value
 
 class CNAME(Record):
-    def build_params(self):
-        for value in self.record_value:
-            self.params["cname"] = value
-            self.add_record_to_technitium()
+    def build_params(self,record_value):
+        self.params["cname"] = record_value
 
 class TXT(Record):
     def format_oversized_txt_value(self,value):
@@ -143,19 +150,19 @@ class TXT(Record):
         value = value.replace('" "',"\n")
         return(value)
 
-    def build_params(self):
+    def build_params(self,record_values):
         """'Values' is a concatenation of values with '\n'.
         '\n' splits TXT record values for Technitium"""
         values = ""
-        for value in self.record_value:
-            value = value.strip('"')
+        for record_value in record_values:
+            value = record_value.strip('"')
             if len(value) > 255:
                 values += self.format_oversized_txt_value(value)
             else:
                 values += value + ("\n")
+
         self.params["text"] = values
         self.params["splitText"] = "true"
-        self.add_record_to_technitium()
 
     def get_record_value(self,nameserver):
         """dnsPython and txt records require somewhat complex normalization"""
@@ -174,14 +181,20 @@ class TXT(Record):
             self.record_value[index] = value.strip('"')
         self.record_value.sort()
 
+    def add_values_to_technitium(self):
+        self.build_params(self.record_value)
+        self.add_record_to_technitium()
+
+    def del_values_from_technitium(self):
+        self.build_params(self.record_value)
+        self.del_record_from_technitium()
+
 class CAA(Record):
-    def build_params(self):
-        for values in self.record_value:
-            flags, tag, value = values.split()
-            self.params['flags'] = flags
-            self.params['tag'] = tag
-            self.params['value'] = value
-            self.add_record_to_technitium()
+    def build_params(self,record_value):
+        flags, tag, value = record_value.split()
+        self.params['flags'] = flags
+        self.params['tag'] = tag
+        self.params['value'] = value
 
     def get_record_value(self,nameserver):
         """Attempts to lookup a record. If lookup fails, record is not used
@@ -199,22 +212,18 @@ class CAA(Record):
         self.record_value.sort()
 
 class SRV(Record):
-    def build_params(self):
-        for value in self.record_value:
-            priority, weight, port, target = value.split()
-            self.params['priority'] = priority
-            self.params['weight'] = weight
-            self.params['port'] = port
-            self.params['target'] = target
-            self.add_record_to_technitium()
+    def build_params(self,record_value):
+        priority, weight, port, target = record_value.split()
+        self.params['priority'] = priority
+        self.params['weight'] = weight
+        self.params['port'] = port
+        self.params['target'] = target
 
 class MX(Record):
-    def build_params(self):
-        for value in self.record_value:
-            preference, exchange = value.split()
-            self.params['exchange'] = exchange
-            self.params['preference'] = preference
-            self.add_record_to_technitium()
+    def build_params(self,record_value):
+        preference, exchange = record_value.split()
+        self.params['exchange'] = exchange
+        self.params['preference'] = preference
 
 def main():
     global zone, resource_group_name, url_add, url_get, url_del
@@ -243,7 +252,8 @@ def main():
             new_record = record_class(record_type,record_fqdn)
             new_record.get_record_value("8.8.8.8")
             new_record.add_record_to_table("azure",new_record.record_fqdn,new_record.record_type,new_record.record_value)
-            new_record.build_params()
+            new_record.add_values_to_technitium()
+
 
         technitium_records = get_technitium_records(zone)
 
@@ -256,11 +266,11 @@ def main():
             
             new_record = record_class(record_type,record_fqdn)
             new_record.get_record_value("192.168.88.2")
-            if new_record.record_exists_in_table("azure", new_record.record_fqdn,new_record.record_type,new_record.record_value):
-                new_record.build_params()
+            if new_record.record_exists_in_table("azure", new_record.record_fqdn, new_record.record_type, new_record.record_value):
+                new_record.add_values_to_technitium()
             else:
-                new_record.del_record_from_technitium()
-
+                new_record.del_values_from_technitium()
+                
         loop += 1
         print(f"loop number {loop} completed")
         time.sleep(10)
