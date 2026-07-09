@@ -56,6 +56,7 @@ class Record:
     def get_record_value(self,nameserver):
         """Retrieves record data from recordset and creates new item
         in list for each record's data."""
+
         custom_resolver.nameservers = [nameserver]
         try:
             answer = custom_resolver.resolve(self.record_fqdn, self.record_type)
@@ -106,9 +107,6 @@ class Record:
     def api_call(self,url):
         requests.get(url, params=self.params)
 
-    def format_record_value(self):
-        pass
-
 class A(Record):
     def build_params(self,record_value):
         self.params["ipAddress"] = record_value
@@ -122,7 +120,7 @@ class TXT(Record):
         self.params["splitText"] = True
         self.params["text"] = record_value
 
-    def format_record_value(self):
+    def format_azure_record_value(self):
         """dnsPython and txt records require somewhat complex normalization"""
         for index, value in enumerate(self.record_value):
             value = value.strip('"')
@@ -141,8 +139,18 @@ class TXT(Record):
         else:
             self.record_value = [string]
 
+    def format_technitium_record_value(self):
+        for index, value in enumerate(self.record_value):
+            value = value.strip('"')
+            value = value.replace('" "', '\n')
+            self.record_value[index] = value
+
     def get_record_value(self,nameserver):
         super().get_record_value(nameserver)
+        if nameserver == technitium_ip:
+            self.format_technitium_record_value()
+        else:
+            self.format_azure_record_value()
 
 class CAA(Record):
     def build_params(self,record_value):
@@ -176,11 +184,11 @@ def main():
     
     RECORD_CLASSES = { "A": A, "CNAME": CNAME, "TXT": TXT, "CAA": CAA, "SRV": SRV, "MX": MX,}
 
-    cur.execute("DELETE FROM azure")
-    con.commit()
-
     loop = 0
     while True:
+
+        cur.execute("DELETE FROM azure")
+        con.commit()
 
         azure_records = get_azure_records()
 
@@ -196,7 +204,6 @@ def main():
             
             # Obtaining record data
             new_record.get_record_value("8.8.8.8") # gets recordset data, not per record
-            new_record.format_record_value()
 
             # this for-loop processes data per record, NOT recordset like above
             for record_value in new_record.record_value:
@@ -205,6 +212,10 @@ def main():
                 new_record.add_values_to_technitium()
                 new_record.add_record_to_table(record_value)
         
+        print("-"*40)
+        print("-"*40)
+        print("-"*40)
+
         technitium_records = get_technitium_records()
 
         for record in technitium_records["response"]["records"]:
@@ -217,7 +228,6 @@ def main():
                 new_record = record_class(record_type,record_fqdn)
 
             new_record.get_record_value("192.168.88.2")
-            new_record.format_record_value()
 
             for record_value in new_record.record_value:
                 new_record.build_params(record_value)
