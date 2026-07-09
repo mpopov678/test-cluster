@@ -21,16 +21,18 @@ cur.execute("""CREATE TABLE IF NOT EXISTS azure (
 # DNS RESOLVER
 custom_resolver = dns.resolver.Resolver()
 
-def get_azure_records(resource_group_name, zone_name):
+def get_azure_records():
     """get iterable object containing record sets from a zone from Azure"""
     dns_client = DnsManagementClient(DefaultAzureCredential(), subscription_id)
     record_sets = dns_client.record_sets.list_by_dns_zone(
         resource_group_name=resource_group_name,
-        zone_name=zone_name
+        zone_name=zone
         )
     return record_sets
 
-def get_technitium_records(zone):
+def get_technitium_records():
+    """get dict containing all records from a zone from Technitium"""
+    url_get = f"http://{technitium_ip}:5380/api/zones/records/get"
     params = {
             "token": technitium_api_token,
             'domain':zone,
@@ -40,7 +42,6 @@ def get_technitium_records(zone):
 
 class Record:
     def __init__(self, record_type, record_fqdn):
-        # record attributes
         self.record_type = record_type
         self.record_fqdn = record_fqdn
         self.record_value = []
@@ -53,8 +54,8 @@ class Record:
         }
 
     def get_record_value(self,nameserver):
-        """Attempts to lookup a record. If lookup fails, record is not used
-        Server to be used for lookup -> custom_resolver.nameservers variable"""
+        """Retrieves record data from recordset and creates new item
+        in list for each record's data."""
         custom_resolver.nameservers = [nameserver]
         try:
             answer = custom_resolver.resolve(self.record_fqdn, self.record_type)
@@ -62,75 +63,51 @@ class Record:
             print(f"lookup failed: {self.record_fqdn} {self.record_type}: {type(e).__name__}")
             return
         for value in answer:
-            self.record_value.append(value.to_text())
+            self.record_value.append(value.to_text()) # .to_text() is needed
             self.record_value.sort()
 
-    def add_record_to_table(self,table_name,record_fqdn,record_type,record_value):
-        cur.executemany(
-            f"""
-            INSERT OR IGNORE INTO {table_name} (record_fqdn, record_type, record_value)
+    def add_record_to_table(self, record_value):
+        cur.execute(
+            """
+            INSERT OR IGNORE INTO azure (record_fqdn, record_type, record_value)
             VALUES (?, ?, ?)
             """, 
-            [
-                (record_fqdn, record_type, value)
-                for value in record_value
-            ]
+            (self.record_fqdn, self.record_type, record_value)
         )
         con.commit()
 
-    def del_record_from_table(self,table_name,record_fqdn,record_type,record_value):
-        cur.executemany(
-            f"""
-            DELETE FROM {table_name}
+    def record_exists_in_table(self, record_value):
+        cur.execute(
+            """
+            SELECT 1
+            FROM azure
             WHERE record_fqdn = ?
             AND record_type = ?
             AND record_value = ?
-            """, 
-            [
-                (record_fqdn, record_type, value)
-                for value in record_value
-            ]
-            )
-        con.commit()
-
-    def record_exists_in_table(self, table_name, record_fqdn, record_type, record_value):
-        for value in record_value:
-            cur.execute(
-                f"""
-                SELECT 1
-                FROM {table_name}
-                WHERE record_fqdn = ?
-                AND record_type = ?
-                AND record_value = ?
-                LIMIT 1
-                """,
-                (record_fqdn, record_type, value)
-            )
-
-            if cur.fetchone() is None:
-                return False
-        return True
+            LIMIT 1
+            """,
+            (self.record_fqdn, self.record_type, record_value)
+        )
+        if cur.fetchone() is None:
+            print(f"Does not match: {self.record_fqdn} {self.record_type} {record_value}")
+            return False
+        else:
+            return True
     
     def add_values_to_technitium(self):
-        for value in self.record_value:
-            self.build_params(value)
-            self.add_record_to_technitium()
+        url_add = f"http://{technitium_ip}:5380/api/zones/records/add"
+        self.api_call(url_add)
 
     def del_values_from_technitium(self):
-        for value in self.record_value:
-            self.build_params(value)
-            self.del_record_from_technitium()
+        url_del = f"http://{technitium_ip}:5380/api/zones/records/delete"
+        self.api_call(url_del)
+        print(f"deleting {self.record_fqdn}")
 
-    def add_record_to_technitium(self):
-        response = requests.get(url_add, params=self.params)
-        if not response.ok:
-            print(f"failed to add {self.record_fqdn} to technitium")
+    def api_call(self,url):
+        requests.get(url, params=self.params)
 
-    def del_record_from_technitium(self):
-        print(f"Attempting to delete record: {self.record_fqdn}")
-        response = requests.get(url_del, params=self.params)
-        if not response.ok:
-            print(f"failed to delete {self.record_fqdn} from technitium")
+    def format_record_value(self):
+        pass
 
 class A(Record):
     def build_params(self,record_value):
@@ -141,75 +118,41 @@ class CNAME(Record):
         self.params["cname"] = record_value
 
 class TXT(Record):
-    def format_oversized_txt_value(self,value):
-        """
-        DNSPython separates < 255 byte record values with ...gWe" "vE0...
-        Technitium does not accept record values > 255 bytes unless seperated by \n
-        """
-        value = value.strip('"')
-        value = value.replace('" "',"\n")
-        return(value)
+    def build_params(self,record_value):
+        self.params["splitText"] = True
+        self.params["text"] = record_value
 
-    def build_params(self,record_values):
-        """'Values' is a concatenation of values with '\n'.
-        '\n' splits TXT record values for Technitium"""
-        values = ""
-        for record_value in record_values:
-            value = record_value.strip('"')
-            if len(value) > 255:
-                values += self.format_oversized_txt_value(value)
-            else:
-                values += value + ("\n")
+    def format_record_value(self):
+        """dnsPython and txt records require somewhat complex normalization"""
+        for index, value in enumerate(self.record_value):
+            value = value.strip('"')
+            if '" "' in value: # dnspython txt record, split into list
+                value = value.replace('" "', '')
+            self.record_value[index] = value
+        # convert list to a string, technitium will handle the rest
+        string = "\n".join(self.record_value)
 
-        self.params["text"] = values
-        self.params["splitText"] = "true"
+        # adding new lines after the 255 byte limit for splitText param
+        value_bytes = string.encode("utf-8")
+        if len(value_bytes) > 255:
+            first_part = value_bytes[:255].decode("utf-8", errors="ignore")
+            second_part = value_bytes[255:].decode("utf-8", errors="ignore")
+            self.record_value = [f"{first_part}\n{second_part}"]
+        else:
+            self.record_value = [string]
 
     def get_record_value(self,nameserver):
-        """dnsPython and txt records require somewhat complex normalization"""
-        custom_resolver.nameservers = [nameserver]
-        try:
-            answer = custom_resolver.resolve(self.record_fqdn, self.record_type)
-        except (dns.resolver.NoNameservers, dns.resolver.NoAnswer) as e:
-            print(f"lookup failed: {self.record_fqdn} {self.record_type}: {type(e).__name__}")
-            return
-        for value in answer:
-            if '" "' in value.to_text(): # dnspython txt record, split into list
-                self.record_value = value.to_text().split('" "')
-            else:
-                self.record_value.append(value.to_text())
-        for index, value in enumerate(self.record_value):
-            self.record_value[index] = value.strip('"')
-        self.record_value.sort()
-
-    def add_values_to_technitium(self):
-        self.build_params(self.record_value)
-        self.add_record_to_technitium()
-
-    def del_values_from_technitium(self):
-        self.build_params(self.record_value)
-        self.del_record_from_technitium()
+        super().get_record_value(nameserver)
 
 class CAA(Record):
     def build_params(self,record_value):
-        flags, tag, value = record_value.split()
+        flags, tag, value = record_value.split(" ")
         self.params['flags'] = flags
         self.params['tag'] = tag
-        self.params['value'] = value
+        self.params['value'] = value.strip('"')
 
     def get_record_value(self,nameserver):
-        """Attempts to lookup a record. If lookup fails, record is not used
-        Server to be used for lookup -> custom_resolver.nameservers variable"""
-        custom_resolver.nameservers = [nameserver]
-        try:
-            answer = custom_resolver.resolve(self.record_fqdn, self.record_type)
-        except (dns.resolver.NoNameservers, dns.resolver.NoAnswer) as e:
-            print(f"lookup failed: {self.record_fqdn} {self.record_type}: {type(e).__name__}")
-            return
-        for value in answer:
-            self.record_value.append(value.to_text())
-        for index, value in enumerate(self.record_value):
-            self.record_value[index] = value.replace('"',"")
-        self.record_value.sort()
+        super().get_record_value(nameserver)
 
 class SRV(Record):
     def build_params(self,record_value):
@@ -226,36 +169,43 @@ class MX(Record):
         self.params['preference'] = preference
 
 def main():
-    global zone, resource_group_name, url_add, url_get, url_del
+    global zone, resource_group_name, technitium_ip
     zone = "kenwavesolutions.com"
     resource_group_name = "Pipesonik_Resources"
     technitium_ip = "192.168.88.2"
-    url_add = f"http://{technitium_ip}:5380/api/zones/records/add"
-    url_get = f"http://{technitium_ip}:5380/api/zones/records/get"
-    url_del = f"http://{technitium_ip}:5380/api/zones/records/delete"
-
+    
     RECORD_CLASSES = { "A": A, "CNAME": CNAME, "TXT": TXT, "CAA": CAA, "SRV": SRV, "MX": MX,}
+
+    cur.execute("DELETE FROM azure")
+    con.commit()
 
     loop = 0
     while True:
 
-        cur.execute("DELETE FROM azure")
-        con.commit()
-        azure_records = get_azure_records(resource_group_name,zone)
+        azure_records = get_azure_records()
+
+        # Initializing the recordsets (not a record yet)
         for record in azure_records:
             record_type = record.type.split("/")[-1]
             record_fqdn = record.fqdn.strip(".")
             record_class = RECORD_CLASSES.get(record_type)
             if record_class is None:
                 continue
+            else:
+                new_record = record_class(record_type,record_fqdn)
+            
+            # Obtaining record data
+            new_record.get_record_value("8.8.8.8") # gets recordset data, not per record
+            new_record.format_record_value()
 
-            new_record = record_class(record_type,record_fqdn)
-            new_record.get_record_value("8.8.8.8")
-            new_record.add_record_to_table("azure",new_record.record_fqdn,new_record.record_type,new_record.record_value)
-            new_record.add_values_to_technitium()
-
-
-        technitium_records = get_technitium_records(zone)
+            # this for-loop processes data per record, NOT recordset like above
+            for record_value in new_record.record_value:
+                # updates object's params/values temporarily to perform actions
+                new_record.build_params(record_value)
+                new_record.add_values_to_technitium()
+                new_record.add_record_to_table(record_value)
+        
+        technitium_records = get_technitium_records()
 
         for record in technitium_records["response"]["records"]:
             record_type = record['type']
@@ -263,15 +213,21 @@ def main():
             record_class = RECORD_CLASSES.get(record_type)
             if record_class is None:
                 continue
-            
-            new_record = record_class(record_type,record_fqdn)
-            new_record.get_record_value("192.168.88.2")
-            if new_record.record_exists_in_table("azure", new_record.record_fqdn, new_record.record_type, new_record.record_value):
-                new_record.add_values_to_technitium()
             else:
-                new_record.del_values_from_technitium()
-                
+                new_record = record_class(record_type,record_fqdn)
+
+            new_record.get_record_value("192.168.88.2")
+            new_record.format_record_value()
+
+            for record_value in new_record.record_value:
+                new_record.build_params(record_value)
+                if new_record.record_exists_in_table(record_value):
+                    new_record.add_values_to_technitium()
+                else:
+                    new_record.del_values_from_technitium()
+
         loop += 1
         print(f"loop number {loop} completed")
         time.sleep(10)
+
 main()
