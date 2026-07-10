@@ -215,7 +215,7 @@ def main():
         print("-"*40)
         print("-"*40)
         print("-"*40)
-
+        
         technitium_records = get_technitium_records()
 
         for record in technitium_records["response"]["records"]:
@@ -240,4 +240,58 @@ def main():
         print(f"loop number {loop} completed")
         time.sleep(10)
 
-main()
+def test_main():
+    global zone, resource_group_name, technitium_ip
+    zone = "kenwavesolutions.com"
+    resource_group_name = "Pipesonik_Resources"
+    technitium_ip = "192.168.88.2"
+    
+    RECORD_CLASSES = { "A": A, "CNAME": CNAME, "TXT": TXT, "CAA": CAA, "SRV": SRV, "MX": MX,}
+
+    azure_records = get_azure_records()
+    azure_records_now = set()
+    technitium_records_now = set()
+
+    # Initializing the recordsets (not a record yet)
+    for record in azure_records:
+        record_type = record.type.split("/")[-1]
+        record_fqdn = record.fqdn.strip(".")
+        record_class = RECORD_CLASSES.get(record_type)
+        if record_class is None:
+            continue
+        else:
+            new_record = record_class(record_type,record_fqdn)
+        
+        # Obtaining record data
+        new_record.get_record_value("8.8.8.8") # gets recordset data, not per record
+
+        # this for-loop processes data per record, NOT recordset like above
+        for record_value in new_record.record_value:
+            # updates object's params/values temporarily to perform actions
+            azure_records_now.add((record_fqdn,record_type,record_value))
+        
+    technitium_records = get_technitium_records()
+
+    for record in technitium_records["response"]["records"]:
+        record_type = record['type']
+        record_fqdn = record['name']
+        record_class = RECORD_CLASSES.get(record_type)
+        if record_class is None:
+            continue
+        else:
+            new_record = record_class(record_type,record_fqdn)
+
+        new_record.get_record_value("192.168.88.2")
+
+        for record_value in new_record.record_value:
+            new_record.build_params(record_value)
+            technitium_records_now.add((record_fqdn,record_type,record_value))
+
+    x = azure_records_now - technitium_records_now
+    y = technitium_records_now - azure_records_now
+    print(x)
+    print('-'*88)
+    print(y)
+    
+
+test_main()
