@@ -1,6 +1,0 @@
-apiVersion: v2
-name: spark-history-server-configs
-description: Spark History Server for lakehouse event logs
-type: application
-version: 0.1.0
-appVersion: "4.1.2"

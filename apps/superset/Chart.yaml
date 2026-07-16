@@ -1,6 +1,0 @@
-apiVersion: v2
-name: superset-configs
-description: Superset database and route resources
-type: application
-version: 0.1.0
-appVersion: "5.0.0"

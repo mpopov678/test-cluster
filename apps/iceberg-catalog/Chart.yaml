@@ -1,6 +1,0 @@
-apiVersion: v2
-name: iceberg-catalog-configs
-description: Iceberg/Nessie cluster resources
-type: application
-version: 0.1.0
-appVersion: "0.108.0"
