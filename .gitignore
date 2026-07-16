@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 Projects/.env
 Projects/dns/__pycache__
 Projects/dns/dns-copy.py
-Projects/dns/old.py
-Projects/dns/table_comparison.py
+Projects/dns/test1.py
+Projects/dns/test2.py
 Projects/dns/test3.py
 Projects/dns/tutorial.db
-=======
-old
-apps/gitea
-testchart/templates/gitea.yaml
-Projects/.env
->>>>>>> parent of 3e3c01c (update .gitignore to include new project files and remove obsolete dns.py; refactor dns-copy.py for improved record handling and database integration)
