@@ -10,7 +10,7 @@ certManager:
   dns01RecursiveNameserversOnly: true
 
 certManagerConfigs:
-  acmeServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+  acmeServer: "https://acme-v02.api.letsencrypt.org/directory"
 
 longhorn:
   defaultSettings:
