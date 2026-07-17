@@ -1,7 +1,5 @@
 Projects/.env
 Projects/dns/__pycache__
-Projects/dns/dns-copy.py
-Projects/dns/test1.py
-Projects/dns/test2.py
-Projects/dns/test3.py
-Projects/dns/tutorial.db
+.agents
+.codex
+.venv
