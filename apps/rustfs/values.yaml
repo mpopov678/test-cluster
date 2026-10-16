@@ -1,0 +1,29 @@
+# Helm values for rustfs v0.4.0
+secret:
+  existingSecret: ""
+  allowInsecureDefaults: false
+  rustfs:
+    access_key: "admin"
+    secret_key: "admin"
+
+replicaCount: 1
+
+mode:
+  standalone:
+    enabled: true
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 1
+    existingClaim:
+      dataClaim: ""
+      logsClaim: ""
+  distributed:
+    enabled: false
+
+ingress:
+  enabled: false
+
+storageclass:
+  name: sc1

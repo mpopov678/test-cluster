@@ -1,0 +1,4 @@
+# Helm values for valkey v0.9.4
+dataStorage:
+  enabled: true
+  requestedSize: 10Gi

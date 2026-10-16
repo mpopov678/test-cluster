@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://helm.releases.hashicorp.com
+      chart: vault
+      targetRevision: v0.28.0
+      helm:
+        valueFiles:
+          - $values/apps/vault/values.yaml
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      targetRevision: main
+      ref: values
+      path: apps/vault/manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    # keep retrying failed syncs (e.g. CRDs from another app not installed yet);
+    # automated sync never retries a failed commit on its own
+    retry:
+      limit: -1
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+
+  # Ignoring differences in volume claim templates because the Helm chart doesn't set apiVersion and kind
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      name: vault
+      jqPathExpressions:
+        - '.spec.volumeClaimTemplates[].apiVersion'
+        - '.spec.volumeClaimTemplates[].kind'

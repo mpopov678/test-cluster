@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+resources:
+  # pinned so the self-managed install only upgrades when this ref is bumped
+  - https://github.com/argoproj/argo-cd//manifests/cluster-install?ref=v3.5.5
+  - argocd.yaml
+  - root-app.yaml
+  - httproute.yaml
+
+patches:
+  # TLS is terminated at the gateway
+  - target:
+      kind: ConfigMap
+      name: argocd-cmd-params-cm
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: argocd-cmd-params-cm
+      data:
+        server.insecure: "true"
