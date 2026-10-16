@@ -1,5 +1,17 @@
 # test-cluster
 
+GitOps repo for a homelab Kubernetes cluster.
+
+## Setup
+
+- **Hardware:** a Proxmox datacenter with 3 Proxmox nodes.
+- **VMs:** each Proxmox node runs one control-plane VM and one worker VM, all
+  built from the AlmaLinux 10 cloud image. Losing one Proxmox node leaves the
+  cluster running.
+- Ansible package is used to configure alma for k8s
+
+## GitOps layout
+
 ```
 bootstrap/argocd/         Argo CD itself (kustomize), applied once by hand, then self-managed
   kustomization.yaml      pinned upstream install + patches
