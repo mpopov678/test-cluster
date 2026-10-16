@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prom
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: v84.5.0
+      helm:
+        valueFiles:
+          - $values/apps/kube-prom/values.yaml
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      targetRevision: main
+      ref: values
+      path: apps/kube-prom/manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-prom
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    # keep retrying failed syncs (e.g. CRDs from another app not installed yet);
+    # automated sync never retries a failed commit on its own
+    retry:
+      limit: -1
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

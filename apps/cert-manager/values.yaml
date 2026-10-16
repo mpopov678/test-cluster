@@ -1,0 +1,6 @@
+# Helm values for cert-manager v1.20.2
+config:
+  enableGatewayAPI: true
+installCRDs: true
+dns01RecursiveNameservers: "8.8.8.8:53"
+dns01RecursiveNameserversOnly: true

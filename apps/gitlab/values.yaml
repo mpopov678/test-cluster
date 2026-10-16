@@ -1,0 +1,114 @@
+# Helm values for gitlab v9.11.4
+global:
+  edition: ce
+
+  hosts:
+    domain: lab.mpopov.net  
+    https: true
+    ssh: gitlab-ssh.lab.mpopov.net # seperate hostname for ssh since its using a different IP
+    # registry:
+    #   enabled: false
+
+  ingress:
+    enabled: false
+
+  gatewayApi:
+    enabled: true
+    gatewayRef:
+      name: eg
+      namespace: networking
+    installEnvoy: false
+    configureCertmanager: false
+    httpToHttpsRedirect: false # envoy setting
+
+  psql:
+    host: gitlab-db-rw.gitlab.svc.cluster.local
+    username: gitlab
+    database: gitlabhq_production
+    password:
+      secret: gitlab-secret
+      key: password
+
+  redis:
+    host: valkey.valkey.svc.cluster.local
+    auth:
+      enabled: false
+
+  minio:
+    enabled: false
+
+  appConfig:
+    object_store:
+      enabled: true
+      connection:
+        secret: gitlab-rustfs-connection
+        key: connection
+
+# rustfs secret key:
+# provider: AWS
+# region: us-east-1
+# endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+# path_style: true
+# aws_access_key_id: 3gSwvhIsEuuygZOETRqW
+# aws_secret_access_key: la52AlPLgQRuUHMoa2DqbhMw15mqTIN0jvVwmxFS
+
+gitlab-runner:
+  gitlabUrl: "https://gitlab.lab.mpopov.net/"
+
+# Disabling interpod-tls
+gitaly:
+  tls:
+    enabled: false
+praefect:
+  tls:
+    enabled: false
+workhorse:
+  tls:
+    enabled: false
+registry:
+  enabled: true
+  gatewayRoute:
+  # disabling sectionname for routes since it will choose correct listener by default
+    sectionName: "https" 
+  tls:
+    enabled: false
+cell:
+  topologyServiceClient:
+    tls:
+      enabled: false
+gitlab:
+  webservice:
+    gatewayRoute:
+      sectionName: "https"
+  kas:
+    gatewayRoute:
+      sectionName: "https"
+    tls:
+      enabled: false
+  # using type load balancer because could not get ciluim gateway to accept ssh tcproute
+  gitlab-shell:
+    service:
+      type: LoadBalancer
+    # gatewayRoute:
+    #   sectionName: null
+
+installCertmanager: false
+certmanager-issuer:
+  email: michaelpopov678@gmail.com
+
+# upgradecheck causes issues during bootstrap
+upgradeCheck:
+  enabled: false
+
+# all the following services are replaced with external ones
+prometheus:
+  install: false
+
+postgresql:
+  install: false
+
+redis:
+  install: false
+
+nginx-ingress:
+  enabled: false
