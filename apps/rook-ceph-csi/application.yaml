@@ -1,26 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: velero
+  name: rook-ceph-csi
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   sources:
-    - repoURL: https://vmware-tanzu.github.io/helm-charts/
-      chart: velero
-      targetRevision: v12.0.1
+    # CSI driver config for the ceph-csi-operator installed by rook-ceph; required since Rook v1.20
+    - repoURL: https://ceph.github.io/ceph-csi-operator
+      chart: ceph-csi-drivers
+      targetRevision: 1.1.0
       helm:
         valueFiles:
-          - $values/apps/velero/values.yaml
+          - $values/apps/rook-ceph-csi/values.yaml
     - repoURL: https://github.com/mpopov678/test-cluster.git
       targetRevision: main
       ref: values
-      path: apps/velero/manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: velero
+    namespace: rook-ceph
   syncPolicy:
     automated:
       prune: true

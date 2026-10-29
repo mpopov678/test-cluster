@@ -1,0 +1,32 @@
+# RBD volumes in the Proxmox Ceph pool "k8s". Same parameters as the "ceph-rbd"
+# StorageClass import-external-cluster.sh creates; unset RBD_POOL_NAME before
+# running the script so it doesn't add that second class.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ceph-sc
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: rook-ceph.rbd.csi.ceph.com # <rook operator namespace>.rbd.csi.ceph.com
+parameters:
+  # namespace of the CephCluster (and of the imported secrets)
+  clusterID: rook-ceph
+  pool: k8s
+  imageFormat: "2"
+  imageFeatures: layering,fast-diff,object-map,deep-flatten,exclusive-lock
+  # cephx users created by create-external-cluster-resources.py
+  csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
+  csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
+  csi.storage.k8s.io/controller-publish-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/controller-publish-secret-namespace: rook-ceph
+  csi.storage.k8s.io/controller-modify-secret-name: rook-csi-rbd-provisioner
+  csi.storage.k8s.io/controller-modify-secret-namespace: rook-ceph
+  csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+  csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph
+  csi.storage.k8s.io/node-publish-secret-name: rook-csi-rbd-node
+  csi.storage.k8s.io/node-publish-secret-namespace: rook-ceph
+  csi.storage.k8s.io/fstype: ext4
+allowVolumeExpansion: true
+reclaimPolicy: Delete

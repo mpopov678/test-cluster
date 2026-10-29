@@ -1,7 +1,0 @@
-# Helm values for longhorn v1.11.2
-defaultSettings:
-  defaultDataPath: "/var/mnt/longhorn"
-preUpgradeChecker:
-  jobEnabled: false
-persistence:
-  defaultClass: false

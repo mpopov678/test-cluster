@@ -1,0 +1,19 @@
+# S3 served by the RGW daemons on the Proxmox hosts (port 7480, plain HTTP).
+# Rook runs no RGW pods here: it creates the Service rook-ceph-rgw-ceph-s3 with
+# these IPs as endpoints, and manages users/buckets through the rgw-admin-ops-user
+# secret from import-external-cluster.sh.
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStore
+metadata:
+  name: ceph-s3
+  namespace: rook-ceph
+spec:
+  gateway:
+    # must be the port the external RGWs listen on
+    port: 7480
+    # ObjectBucketClaims advertise the first endpoint; apps should use the
+    # Service (rook-ceph-rgw-ceph-s3.rook-ceph.svc:7480), which balances across all three
+    externalRgwEndpoints:
+      - ip: 192.168.88.6 # pve2
+      - ip: 192.168.88.5 # pve1
+      - ip: 192.168.88.7 # pve3
