@@ -1,0 +1,26 @@
+# Helm values for ceph-csi-drivers 1.1.0
+# Rook's recommended values (rook v1.21.1 deploy/charts/ceph-csi-drivers/values.yaml).
+# Driver names must be "<rook operator namespace>.<driver>.csi.ceph.com" to match the StorageClass.
+operatorConfig:
+  namespace: rook-ceph
+  driverSpecDefaults:
+    imageSet:
+      name: rook-csi-operator-image-set-configmap
+    nodePlugin:
+      priorityClassName: system-node-critical
+    controllerPlugin:
+      priorityClassName: system-cluster-critical
+
+drivers:
+  rbd:
+    enabled: true
+    name: rook-ceph.rbd.csi.ceph.com
+  cephfs:
+    enabled: true
+    name: rook-ceph.cephfs.csi.ceph.com
+  nfs:
+    enabled: false
+    name: rook-ceph.nfs.csi.ceph.com
+  nvmeof:
+    enabled: false
+    name: rook-ceph.nvmeof.csi.ceph.com

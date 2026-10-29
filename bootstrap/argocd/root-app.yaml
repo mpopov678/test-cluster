@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mpopov678/test-cluster.git
+    path: apps
+    targetRevision: main
+    # only pick up apps/<name>/application.yaml; each Application deploys its own values/manifests
+    directory:
+      recurse: true
+      include: '*/application.yaml'
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

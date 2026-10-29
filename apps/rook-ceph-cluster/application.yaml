@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-ceph-cluster
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.rook.io/release
+      chart: rook-ceph-cluster
+      targetRevision: v1.21.1
+      helm:
+        valueFiles:
+          - $values/apps/rook-ceph-cluster/values.yaml
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      targetRevision: main
+      ref: values
+      path: apps/rook-ceph-cluster/manifests
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: rook-ceph
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    # keep retrying failed syncs (e.g. CRDs from another app not installed yet);
+    # automated sync never retries a failed commit on its own
+    retry:
+      limit: -1
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
