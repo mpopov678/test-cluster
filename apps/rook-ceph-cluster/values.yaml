@@ -1,0 +1,19 @@
+# Helm values for rook-ceph-cluster v1.21.1
+# External mode (upstream values-external.yaml): Ceph runs on the Proxmox hosts and
+# Rook only connects to it. Connection details and cephx keys come from Rook's
+# import-external-cluster.sh, run by hand, so no secrets live in this repo.
+cephClusterSpec:
+  external:
+    enable: true
+  crashCollector:
+    disable: true
+  healthCheck:
+    daemonHealth:
+      mon:
+        disabled: false
+        interval: 45s
+
+# Pools, filesystems and object stores are managed on the Proxmox side
+cephBlockPools: []
+cephFileSystems: []
+cephObjectStores: []

@@ -1,0 +1,11 @@
+# Buckets for ObjectBucketClaims: each claim gets a new bucket and RGW user in
+# ceph-s3, plus a Secret and ConfigMap with the same name as the claim.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ceph-bucket-sc
+provisioner: rook-ceph.ceph.rook.io/bucket # <rook cluster namespace>.ceph.rook.io/bucket
+reclaimPolicy: Delete
+parameters:
+  objectStoreName: ceph-s3
+  objectStoreNamespace: rook-ceph

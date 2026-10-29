@@ -41,16 +41,16 @@ global:
     object_store:
       enabled: true
       connection:
-        secret: gitlab-rustfs-connection
+        secret: gitlab-object-storage
         key: connection
 
-# rustfs secret key:
+# gitlab-object-storage secret (created by hand, not in git), key "connection":
 # provider: AWS
 # region: us-east-1
-# endpoint: http://rustfs-svc.rustfs.svc.cluster.local:9000
+# endpoint: http://rook-ceph-rgw-ceph-s3.rook-ceph.svc:7480
 # path_style: true
-# aws_access_key_id: 3gSwvhIsEuuygZOETRqW
-# aws_secret_access_key: la52AlPLgQRuUHMoa2DqbhMw15mqTIN0jvVwmxFS
+# aws_access_key_id: <from Ceph S3>
+# aws_secret_access_key: <from Ceph S3>
 
 gitlab-runner:
   gitlabUrl: "https://gitlab.lab.mpopov.net/"
