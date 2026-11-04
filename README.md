@@ -21,6 +21,7 @@ apps/<name>/
   application.yaml        the Argo CD Application (chart repo + version live here)
   values.yaml             Helm values for the upstream chart (optional)
   manifests/              extra plain YAML deployed alongside the chart (optional)
+archive/<name>/           apps not in use now but kept for later; move back under apps/ to re-enable
 ```
 
 ## Bootstrap
