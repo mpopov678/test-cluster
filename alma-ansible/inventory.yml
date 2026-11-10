@@ -1,0 +1,15 @@
+---
+k8s_nodes:
+  vars:
+    ansible_user: root
+  children:
+    control_planes:
+      hosts:
+        alma-cp1: { ansible_host: 192.168.88.101 }
+        alma-cp2: { ansible_host: 192.168.88.102 }
+        alma-cp3: { ansible_host: 192.168.88.103 }
+    workers:
+      hosts:
+        alma-w1: { ansible_host: 192.168.88.16 }
+        alma-w2: { ansible_host: 192.168.88.17 }
+        alma-w3: { ansible_host: 192.168.88.19 }

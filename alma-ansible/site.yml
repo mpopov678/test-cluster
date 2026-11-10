@@ -1,0 +1,124 @@
+---
+- name: Prepare AlmaLinux 10 VMs as kubeadm nodes
+  hosts: k8s_nodes
+  vars:
+    kubernetes_minor_version: v1.36
+
+  pre_tasks:
+    - name: Require AlmaLinux 10
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.distribution == "AlmaLinux"
+          - ansible_facts.distribution_major_version == "10"
+
+  tasks:
+    - name: Set SELinux to permissive
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+
+    # Cilium needs netfilter modules (xt_socket, xt_TPROXY, ip_set, ...) that only ship here
+    - name: Install extra kernel modules for the running kernel
+      ansible.builtin.dnf:
+        name: "kernel-modules-extra-{{ ansible_facts.kernel }}"
+        use_backend: dnf4  # AlmaLinux 10 has no python3-libdnf5 for Ansible's dnf5 backend
+        install_weak_deps: false
+
+    # The only host setting kubeadm's preflight checks for
+    - name: Enable IPv4 forwarding
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: "1"
+        sysctl_file: /etc/sysctl.d/99-kubernetes.conf
+
+    # journald defaults to Storage=auto: logs survive reboots once this directory exists
+    - name: Keep the journal across reboots
+      ansible.builtin.file:
+        path: /var/log/journal
+        state: directory
+        owner: root
+        group: systemd-journal
+        mode: "2755"
+      notify: Flush journal to disk
+
+    - name: Add the Docker repository (AlmaLinux 10 doesn't package containerd)
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+        mode: "0644"
+
+    - name: Install containerd
+      ansible.builtin.dnf:
+        name: containerd.io
+        use_backend: dnf4
+        install_weak_deps: false
+
+    - name: Generate containerd's default configuration
+      ansible.builtin.command: containerd config default
+      register: containerd_default_config
+      changed_when: false
+      check_mode: false
+
+    # kubelet (kubeadm default) and containerd must both use the systemd cgroup driver
+    - name: Configure containerd with systemd cgroups
+      ansible.builtin.copy:
+        dest: /etc/containerd/config.toml
+        content: "{{ containerd_default_config.stdout | replace('SystemdCgroup = false', 'SystemdCgroup = true') }}\n"
+        mode: "0644"
+      notify: Restart containerd
+
+    - name: Enable and start containerd
+      ansible.builtin.systemd_service:
+        name: containerd
+        enabled: true
+        state: started
+
+    # exclude= keeps routine `dnf update` from upgrading Kubernetes; upgrade with kubeadm instead
+    - name: Add the Kubernetes repository
+      ansible.builtin.copy:
+        dest: /etc/yum.repos.d/kubernetes.repo
+        mode: "0644"
+        content: |
+          [kubernetes]
+          name=Kubernetes
+          baseurl=https://pkgs.k8s.io/core:/stable:/{{ kubernetes_minor_version }}/rpm/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://pkgs.k8s.io/core:/stable:/{{ kubernetes_minor_version }}/rpm/repodata/repomd.xml.key
+          exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+
+    - name: Install Kubernetes packages
+      ansible.builtin.dnf:
+        name: [kubeadm, kubelet, kubectl, cri-tools]
+        use_backend: dnf4
+        disable_excludes: kubernetes
+        install_weak_deps: false
+
+    - name: Point crictl at containerd
+      ansible.builtin.copy:
+        dest: /etc/crictl.yaml
+        mode: "0644"
+        content: |
+          runtime-endpoint: unix:///run/containerd/containerd.sock
+          image-endpoint: unix:///run/containerd/containerd.sock
+
+    # Starts once kubeadm init/join has written its configuration
+    - name: Enable kubelet
+      ansible.builtin.systemd_service:
+        name: kubelet
+        enabled: true
+
+    - name: Check that containerd's CRI answers
+      ansible.builtin.command: crictl info
+      changed_when: false
+      check_mode: false
+
+  handlers:
+    - name: Restart containerd
+      ansible.builtin.systemd_service:
+        name: containerd
+        state: restarted
+
+    - name: Flush journal to disk
+      ansible.builtin.command: journalctl --flush
+      changed_when: true
