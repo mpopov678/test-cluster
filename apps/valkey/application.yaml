@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: https://valkey.io/valkey-helm/
       chart: valkey
-      targetRevision: v0.9.4
+      targetRevision: 0.12.1
       helm:
         valueFiles:
           - $values/apps/valkey/values.yaml

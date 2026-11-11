@@ -1,0 +1,14 @@
+# Helm values for valkey v0.9.4
+dataStorage:
+  enabled: true
+  requestedSize: 5Gi
+
+metrics:
+  enabled: true
+  exporter:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        memory: 64Mi
