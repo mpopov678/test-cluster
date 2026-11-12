@@ -6,7 +6,11 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: cloudflare-issuer
 spec:
-  gatewayClassName: cilium
+  gatewayClassName: envoy-gateway
+  infrastructure:
+    annotations:
+      # Cilium LB-IPAM pins this IP on the generated Envoy Service
+      lbipam.cilium.io/ips: "192.168.88.110"
   listeners:
 
   # - allowedRoutes:
