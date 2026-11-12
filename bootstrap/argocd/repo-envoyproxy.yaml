@@ -1,0 +1,14 @@
+# public OCI Helm registry for Envoy Gateway charts (no credentials);
+# Argo CD needs enableOCI to pull charts from an OCI registry
+apiVersion: v1
+kind: Secret
+metadata:
+  name: repo-envoyproxy
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  name: envoyproxy
+  type: helm
+  url: docker.io/envoyproxy
+  enableOCI: "true"
