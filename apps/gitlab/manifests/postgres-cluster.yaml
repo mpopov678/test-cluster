@@ -5,6 +5,8 @@ metadata:
   namespace: gitlab
 spec:
   instances: 1
+  # GitLab 19 requires PostgreSQL 17; the CNPG 1.30 default is 18
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-system-trixie
   storage:
     size: 10Gi
 

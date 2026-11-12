@@ -1,0 +1,104 @@
+# Helm values for gitlab 10.5.6 (GitLab CE 19.5)
+# External dependencies:
+#   - PostgreSQL: CNPG cluster gitlab-db (manifests/postgres-cluster.yaml, operator = cloudnativepg app)
+#   - Redis: valkey app (valkey.valkey.svc)
+#   - Object storage: Ceph RGW, user "gitlab"; buckets created by hand
+# Hand-made secrets in namespace gitlab (not in git):
+#   - gitlab-secret            basic-auth (username/password), used by CNPG initdb and GitLab
+#   - gitlab-object-storage    key "connection" (fog/AWS format)
+#   - gitlab-registry-storage  key "config" (registry storage driver block)
+global:
+  edition: ce
+
+  hosts:
+    domain: lab.mpopov.net # gitlab., registry., kas. ; SSH is gitlab.lab.mpopov.net:22 through eg
+    https: true
+
+  ingress:
+    enabled: false
+
+  gatewayApi:
+    enabled: true
+    gatewayRef:
+      name: eg
+      namespace: networking
+    installEnvoy: false        # Envoy Gateway is its own app (apps/envoy-gateway)
+    configureEnvoy: true       # route-level BackendTrafficPolicies (long git ops, KAS websockets)
+    configureCertmanager: false
+    httpToHttpsRedirect: false # eg's http listener already redirects (http-redirect route)
+
+  psql:
+    host: gitlab-db-rw.gitlab.svc.cluster.local
+    username: gitlab
+    database: gitlabhq_production
+    password:
+      secret: gitlab-secret
+      key: password
+
+  redis:
+    host: valkey.valkey.svc.cluster.local
+    auth:
+      enabled: false
+
+  appConfig:
+    object_store:
+      enabled: true
+      connection:
+        secret: gitlab-object-storage
+        key: connection
+
+# eg, its GatewayClass and EnvoyProxy are managed outside this chart
+gatewayApiResources:
+  class:
+    enabled: false
+
+gitlab-runner:
+  gitlabUrl: "https://gitlab.lab.mpopov.net/"
+  metrics:
+    enabled: true # :9252
+
+registry:
+  storage:
+    secret: gitlab-registry-storage
+    key: config
+  gatewayRoute:
+    sectionName: https
+  tls:
+    enabled: false
+  metrics:
+    enabled: true # debug server :5001 /metrics
+
+# no inter-pod TLS
+gitaly:
+  tls:
+    enabled: false
+
+# Metrics endpoints (scrape targets for monitoring stacks), on by default unless set below:
+#   webservice :8083, sidekiq :3807, gitaly :9236, gitlab-exporter :9168, kas :8151
+#   gitlab-shell metrics need gitlab-sshd (we run openssh), so they stay off
+# serviceMonitor/podMonitor need Prometheus Operator CRDs; enable per component once installed.
+gitlab:
+  webservice:
+    gatewayRoute:
+      sectionName: https
+  kas:
+    gatewayRoute:
+      sectionName: https
+    tls:
+      enabled: false
+  gitlab-shell:
+    # TCPRoute (gateway.networking.k8s.io/v1) on eg's "ssh" listener (port 22)
+    gatewayRoute:
+      sectionName: ssh
+
+installCertmanager: false
+
+# upgradeCheck causes issues during bootstrap
+upgradeCheck:
+  enabled: false
+
+prometheus:
+  install: false
+
+nginx-ingress:
+  enabled: false
