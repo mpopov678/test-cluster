@@ -3,6 +3,10 @@ kind: Application
 metadata:
   name: gitlab
   namespace: argocd
+  annotations:
+    # compare via server-side dry-run so API-server/CRD defaults (route group/kind/weight,
+    # dropped false/0/null fields) don't show as OutOfSync
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

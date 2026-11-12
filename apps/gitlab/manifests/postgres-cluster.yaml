@@ -10,6 +10,11 @@ spec:
   storage:
     size: 10Gi
 
+  postgresql:
+    parameters:
+      # GitLab's schema load (one transaction) exceeds the default of 64
+      max_locks_per_transaction: "512"
+
   bootstrap:
     initdb:
       database: gitlabhq_production
