@@ -1,0 +1,4 @@
+# CRDs come from the gateway-crds-helm source in application.yaml (Envoy Gateway CRDs)
+# and a hand install (Gateway API CRDs, standard channel v1.6.2)
+crds:
+  enabled: false

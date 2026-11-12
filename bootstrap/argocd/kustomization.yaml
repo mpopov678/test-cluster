@@ -7,6 +7,7 @@ resources:
   - argocd.yaml
   - root-app.yaml
   - httproute.yaml
+  - repo-envoyproxy.yaml
 
 patches:
   # TLS is terminated at the gateway
