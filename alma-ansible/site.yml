@@ -94,6 +94,14 @@
         disable_excludes: kubernetes
         install_weak_deps: false
 
+    # kubelet must use the node's LAN IP (also what goes into its serving certificate)
+    - name: Pin kubelet to the node's IP
+      ansible.builtin.copy:
+        dest: /etc/sysconfig/kubelet
+        mode: "0644"
+        content: |
+          KUBELET_EXTRA_ARGS="--node-ip={{ ansible_host }}"
+
     - name: Point crictl at containerd
       ansible.builtin.copy:
         dest: /etc/crictl.yaml
