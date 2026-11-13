@@ -1,0 +1,52 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  hostnames:
+    - grafana.lab.mpopov.net
+  parentRefs:
+    - name: eg
+      namespace: networking
+      sectionName: https
+  rules:
+    - backendRefs:
+        - name: victoria-metrics-grafana
+          port: 80
+---
+# vmui (no auth, LAN only): https://vm.lab.mpopov.net/vmui
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: vmsingle
+  namespace: monitoring
+spec:
+  hostnames:
+    - vm.lab.mpopov.net
+  parentRefs:
+    - name: eg
+      namespace: networking
+      sectionName: https
+  rules:
+    - backendRefs:
+        - name: vmsingle-vm
+          port: 8428
+---
+# Alertmanager UI (no auth, LAN only): silences
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  hostnames:
+    - alertmanager.lab.mpopov.net
+  parentRefs:
+    - name: eg
+      namespace: networking
+      sectionName: https
+  rules:
+    - backendRefs:
+        - name: vmalertmanager-vm
+          port: 9093

@@ -1,0 +1,120 @@
+# Helm values for victoria-metrics-k8s-stack 0.98.1
+# Hand-made Secrets in ns monitoring (not in this public repo):
+#   grafana-admin       keys admin-user, admin-password
+#   alertmanager-ntfy   key url (ntfy topic URL incl. ?template=alertmanager)
+
+# Argo CD renders with the app name as release; chart asks for this under Argo
+argocdReleaseOverride: victoria-metrics
+fullnameOverride: vm
+
+victoria-metrics-operator:
+  operator:
+    # mark ServiceMonitor/PodMonitor-converted objects so Argo neither diffs nor prunes them
+    prometheus_converter_add_argocd_ignore_annotations: true
+    # delete the converted object when its ServiceMonitor/PodMonitor goes away
+    enable_converter_ownership: true
+  admissionWebhooks:
+    # cert-manager issues the webhook cert; otherwise the chart generates a new one on every render
+    certManager:
+      enabled: true
+
+vmsingle:
+  spec:
+    retentionPeriod: 30d
+    storage:
+      storageClassName: ceph-sc
+      resources:
+        requests:
+          storage: 20Gi
+
+vmagent:
+  spec:
+    scrapeInterval: 30s
+    # dashboards and default rules filter/group by `cluster`
+    externalLabels:
+      cluster: test-lab
+
+alertmanager:
+  spec:
+    externalURL: https://alertmanager.lab.mpopov.net
+    # mounted at /etc/vm/secrets/alertmanager-ntfy/
+    secrets:
+      - alertmanager-ntfy
+  config:
+    route:
+      receiver: ntfy
+      group_by: [alertname, namespace]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      routes:
+        # always-firing heartbeat / inhibitor helpers: don't notify
+        - matchers: ['alertname=~"Watchdog|InfoInhibitor"']
+          receiver: blackhole
+        - matchers: ['severity="info"']
+          receiver: blackhole
+    inhibit_rules:
+      - source_matchers: ['severity="critical"']
+        target_matchers: ['severity=~"warning|info"']
+        equal: [cluster, namespace, alertname]
+      - source_matchers: ['severity="warning"']
+        target_matchers: ['severity="info"']
+        equal: [cluster, namespace, alertname]
+    receivers:
+      - name: blackhole
+      - name: ntfy
+        webhook_configs:
+          - url_file: /etc/vm/secrets/alertmanager-ntfy/url
+            send_resolved: true
+
+grafana:
+  admin:
+    existingSecret: grafana-admin
+  # RBD volume is RWO: Recreate avoids Multi-Attach hangs on rollout
+  deploymentStrategy:
+    type: Recreate
+  persistence:
+    enabled: true
+    storageClassName: ceph-sc
+    size: 2Gi
+  grafana.ini:
+    server:
+      root_url: https://grafana.lab.mpopov.net
+
+# kubelet serving certs are CA-signed (serverTLSBootstrap), so verify them
+kubelet:
+  vmScrape:
+    spec:
+      tlsConfig:
+        insecureSkipVerify: false
+
+# controller-manager / scheduler serve self-signed in-memory certs
+kubeControllerManager:
+  vmScrape:
+    spec:
+      endpoints:
+        - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          port: http-metrics
+          scheme: https
+          tlsConfig:
+            insecureSkipVerify: true
+kubeScheduler:
+  vmScrape:
+    spec:
+      endpoints:
+        - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          port: http-metrics
+          scheme: https
+          tlsConfig:
+            insecureSkipVerify: true
+
+# kubeadm etcd: listen-metrics-urls http://0.0.0.0:2381 (plain HTTP)
+kubeEtcd:
+  service:
+    port: 2381
+    targetPort: 2381
+  vmScrape:
+    spec:
+      endpoints:
+        - port: http-metrics
+          scheme: http
