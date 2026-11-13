@@ -1,0 +1,31 @@
+# Valkey redis_exporter sidecar (Service valkey-metrics:9121)
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: valkey
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - valkey
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: valkey
+      app.kubernetes.io/component: metrics
+  endpoints:
+    - port: metrics
+---
+# CloudNativePG instances in any namespace (exporter :9187, port name "metrics")
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: cnpg
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      cnpg.io/podRole: instance
+  podMetricsEndpoints:
+    - port: metrics
