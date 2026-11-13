@@ -1,0 +1,8 @@
+# Helm values for kubelet-csr-approver chart 1.2.15
+# Auto-approves kubelet-serving CSRs (kubelets run with serverTLSBootstrap: true).
+# Node hostnames (alma-cp1, alma-w1, ...) are not in DNS, so the DNS check is
+# bypassed; the name regex and IP prefix checks below still apply.
+providerRegex: ^alma-(cp|w)[0-9]+$
+providerIpPrefixes:
+  - 192.168.88.0/24
+bypassDnsResolution: true

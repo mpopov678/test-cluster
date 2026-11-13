@@ -1,0 +1,5 @@
+# Helm values for metrics-server chart 3.14.0 (metrics-server v0.9.0)
+# Kubelet serving certs are kubeadm self-signed (SAN = hostname only),
+# so metrics-server can't verify them.
+args:
+  - --kubelet-insecure-tls
