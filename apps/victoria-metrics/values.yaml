@@ -80,6 +80,10 @@ grafana:
   grafana.ini:
     server:
       root_url: https://grafana.lab.mpopov.net
+  sidecar:
+    dashboards:
+      # chart default; the stack's /var/lib/grafana/dashboards hides the gnetId downloads
+      folder: /tmp/dashboards
   # Grafana.com dashboards for apps whose charts ship none (downloaded at pod start;
   # both use a datasource variable that defaults to the VictoriaMetrics datasource)
   dashboardProviders:

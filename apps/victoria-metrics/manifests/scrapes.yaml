@@ -32,7 +32,8 @@ spec:
 ---
 # Argo CD (plain manifests in bootstrap/argocd, no chart ServiceMonitors). Every
 # Argo CD Service with a port named "metrics": application-controller (argocd-metrics),
-# server, repo-server, applicationset-controller, notifications-controller
+# server, repo-server, applicationset-controller, notifications-controller.
+# dex is unconfigured (no SSO), so nothing listens on its metrics port
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMServiceScrape
 metadata:
@@ -46,6 +47,10 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/part-of: argocd
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: NotIn
+        values: [argocd-dex-server]
   endpoints:
     - port: metrics
 ---

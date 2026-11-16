@@ -102,6 +102,15 @@
         content: |
           KUBELET_EXTRA_ARGS="--node-ip={{ ansible_host }}"
 
+    # Only the lab resolver: public DNS can't answer for lab.mpopov.net, and CoreDNS
+    # (which copies the node's resolv.conf) and kubelet pick a resolver at random.
+    # Cloud-init seeds the profile from the Proxmox host's resolv.conf (incl. 8.8.8.8).
+    - name: Use the lab DNS server only
+      ansible.builtin.command: nmcli connection modify "cloud-init eth0" ipv4.dns {{ lab_dns }}
+      when: ansible_facts.dns.nameservers | default([]) != [lab_dns]
+      notify: Reapply network config
+      tags: [dns]
+
     - name: Point crictl at containerd
       ansible.builtin.copy:
         dest: /etc/crictl.yaml
@@ -129,4 +138,9 @@
 
     - name: Flush journal to disk
       ansible.builtin.command: journalctl --flush
+      changed_when: true
+
+    # applies the profile without bouncing the link
+    - name: Reapply network config
+      ansible.builtin.shell: nmcli connection reload && nmcli device reapply eth0
       changed_when: true
