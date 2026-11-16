@@ -1,0 +1,72 @@
+# Lab-specific alerts for apps whose charts ship no rules
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: lab-apps
+  namespace: monitoring
+spec:
+  groups:
+    - name: cert-manager
+      rules:
+        - alert: CertificateNotReady
+          expr: max by (namespace, name) (certmanager_certificate_ready_status{condition="False"}) == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} is not Ready"
+        - alert: CertificateExpiringSoon
+          expr: (min by (namespace, name) (certmanager_certificate_expiration_timestamp_seconds) - time()) < 14 * 86400
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }} (renewal should have happened at 30 days)"
+        - alert: CertificateExpiringSoon
+          expr: (min by (namespace, name) (certmanager_certificate_expiration_timestamp_seconds) - time()) < 3 * 86400
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in {{ $value | humanizeDuration }}"
+    - name: argocd
+      rules:
+        - alert: ArgoCDAppUnhealthy
+          expr: max by (name) (argocd_app_info{health_status!~"Healthy|Progressing"}) == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Argo CD app {{ $labels.name }} is {{ with $labels.health_status }}{{ . }}{{ else }}not healthy{{ end }}"
+        - alert: ArgoCDAppOutOfSync
+          expr: max by (name) (argocd_app_info{sync_status!="Synced"}) == 1
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Argo CD app {{ $labels.name }} has been out of sync for 30 minutes"
+    - name: data-services
+      rules:
+        - alert: PostgresInstanceDown
+          expr: cnpg_collector_up == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "CNPG instance {{ $labels.namespace }}/{{ $labels.pod }} cannot reach PostgreSQL"
+        - alert: ValkeyDown
+          expr: redis_up == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Valkey in {{ $labels.namespace }} is down"
+    - name: external-dns
+      rules:
+        - alert: ExternalDNSSyncStale
+          expr: time() - external_dns_controller_last_sync_timestamp_seconds > 15 * 60
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "external-dns has not synced DNS records for over 15 minutes"

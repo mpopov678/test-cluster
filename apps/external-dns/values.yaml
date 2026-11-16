@@ -24,3 +24,7 @@ domainFilters:
 
 sources:
   - gateway-httproute # external gateway scans for hostnames in httproute
+
+# ServiceMonitor (:7979); VictoriaMetrics operator converts it
+serviceMonitor:
+  enabled: true

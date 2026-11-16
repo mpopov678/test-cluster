@@ -1,0 +1,9 @@
+# Helm values for cloudnative-pg 0.29.1 (operator only; clusters live in consuming apps)
+monitoring:
+  # PodMonitor for the operator (:8080); VictoriaMetrics operator converts it.
+  # Instance pods (:9187) are scraped by apps/victoria-metrics/manifests/scrapes.yaml
+  podMonitorEnabled: true
+  # CNPG dashboard ConfigMap, placed where the Grafana sidecar looks
+  grafanaDashboard:
+    create: true
+    namespace: monitoring

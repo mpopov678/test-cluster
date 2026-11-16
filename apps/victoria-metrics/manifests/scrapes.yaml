@@ -29,3 +29,56 @@ spec:
       cnpg.io/podRole: instance
   podMetricsEndpoints:
     - port: metrics
+---
+# Argo CD (plain manifests in bootstrap/argocd, no chart ServiceMonitors). Every
+# Argo CD Service with a port named "metrics": application-controller (argocd-metrics),
+# server, repo-server, applicationset-controller, notifications-controller
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: argocd
+  namespace: monitoring
+spec:
+  jobLabel: app.kubernetes.io/name
+  namespaceSelector:
+    matchNames:
+      - argocd
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: argocd
+  endpoints:
+    - port: metrics
+---
+# Envoy Gateway controller (/metrics :19001); gateway-helm ships no ServiceMonitor
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: envoy-gateway
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - envoy-gateway-system
+  selector:
+    matchLabels:
+      control-plane: envoy-gateway
+  podMetricsEndpoints:
+    - port: metrics
+---
+# Envoy proxies of Gateway eg (/stats/prometheus :19001)
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: envoy-proxy
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - envoy-gateway-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: proxy
+      app.kubernetes.io/managed-by: envoy-gateway
+  podMetricsEndpoints:
+    - port: metrics
+      path: /stats/prometheus

@@ -4,3 +4,8 @@ config:
 installCRDs: true
 dns01RecursiveNameservers: "8.8.8.8:53"
 dns01RecursiveNameserversOnly: true
+
+# ServiceMonitor for the controller (:9402); VictoriaMetrics operator converts it
+prometheus:
+  servicemonitor:
+    enabled: true

@@ -56,6 +56,8 @@ gitlab-runner:
   gitlabUrl: "https://gitlab.lab.mpopov.net/"
   metrics:
     enabled: true # :9252
+    podMonitor:
+      enabled: true
 
 registry:
   storage:
@@ -67,25 +69,45 @@ registry:
     enabled: false
   metrics:
     enabled: true # debug server :5001 /metrics
+    serviceMonitor:
+      enabled: true
 
 # no inter-pod TLS
 gitaly:
   tls:
     enabled: false
 
-# Metrics endpoints (scrape targets for monitoring stacks), on by default unless set below:
+# Metrics endpoints, on by default:
 #   webservice :8083, sidekiq :3807, gitaly :9236, gitlab-exporter :9168, kas :8151
 #   gitlab-shell metrics need gitlab-sshd (we run openssh), so they stay off
-# serviceMonitor/podMonitor need Prometheus Operator CRDs; enable per component once installed.
+# ServiceMonitors/PodMonitors (prometheus-operator-crds app) are converted by the VictoriaMetrics operator.
 gitlab:
   webservice:
     gatewayRoute:
       sectionName: https
+    metrics:
+      serviceMonitor:
+        enabled: true
+  sidekiq:
+    metrics:
+      podMonitor:
+        enabled: true
+  gitaly:
+    metrics:
+      serviceMonitor:
+        enabled: true
+  gitlab-exporter:
+    metrics:
+      serviceMonitor:
+        enabled: true
   kas:
     gatewayRoute:
       sectionName: https
     tls:
       enabled: false
+    metrics:
+      serviceMonitor:
+        enabled: true
   gitlab-shell:
     # TCPRoute (gateway.networking.k8s.io/v1) on eg's "ssh" listener (port 22)
     gatewayRoute:

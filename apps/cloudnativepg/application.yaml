@@ -11,6 +11,12 @@ spec:
     - repoURL: https://cloudnative-pg.github.io/charts
       chart: cloudnative-pg
       targetRevision: 0.29.1
+      helm:
+        valueFiles:
+          - $values/apps/cloudnativepg/values.yaml
+    - repoURL: https://github.com/mpopov678/test-cluster.git
+      targetRevision: main
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: cnpg-system

@@ -80,6 +80,28 @@ grafana:
   grafana.ini:
     server:
       root_url: https://grafana.lab.mpopov.net
+  # Grafana.com dashboards for apps whose charts ship none (downloaded at pod start;
+  # both use a datasource variable that defaults to the VictoriaMetrics datasource)
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: grafana-com
+          orgId: 1
+          folder: Apps
+          type: file
+          disableDeletion: true
+          editable: false
+          options:
+            path: /var/lib/grafana/dashboards/grafana-com
+  dashboards:
+    grafana-com:
+      argocd:
+        gnetId: 19993 # ArgoCD / Operational / Overview
+        revision: 9
+      cert-manager:
+        gnetId: 20842 # Cert-manager-Kubernetes
+        revision: 3
 
 # kubelet serving certs are CA-signed (serverTLSBootstrap), so verify them
 kubelet:
