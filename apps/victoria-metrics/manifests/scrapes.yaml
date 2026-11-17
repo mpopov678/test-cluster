@@ -90,8 +90,10 @@ spec:
 ---
 # Proxmox Ceph: mgr prometheus module (:9283) on every Ceph host. Only the active
 # mgr serves metrics; standbys answer /metrics with an empty 200 (stay up=1).
-# Constant instance label keeps series continuous across mgr failovers;
-# honorLabels keeps the per-OSD `instance` (host) label on ceph_disk_occupation.
+# Targets keep their own instance (so up/scrape_* stay per host and TargetDown works);
+# the scraped Ceph samples get instance=ceph so series stay continuous across mgr
+# failovers. honorLabels keeps the per-OSD `instance` (host) label on ceph_disk_occupation,
+# which the regex leaves alone.
 apiVersion: operator.victoriametrics.com/v1beta1
 kind: VMStaticScrape
 metadata:
@@ -105,6 +107,23 @@ spec:
         - 192.168.88.6:9283
         - 192.168.88.7:9283
       honorLabels: true
-      relabelConfigs:
-        - targetLabel: instance
+      metricRelabelConfigs:
+        - sourceLabels: [instance]
+          regex: '192\.168\.88\.[567]:9283'
+          targetLabel: instance
           replacement: ceph
+---
+# Proxmox VE hosts: Debian's prometheus-node-exporter package. Same job name as the
+# in-cluster node-exporter so the stack's node alerts and dashboards cover the hosts too
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMStaticScrape
+metadata:
+  name: pve-node-exporter
+  namespace: monitoring
+spec:
+  jobName: node-exporter
+  targetEndpoints:
+    - targets:
+        - 192.168.88.5:9100
+        - 192.168.88.6:9100
+        - 192.168.88.7:9100
