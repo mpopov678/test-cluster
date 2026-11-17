@@ -16,7 +16,16 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
+  ignoreDifferences:
+    # Argo adds these to apps whose charts have PreDelete hooks (e.g. victoria-metrics)
+    - group: argoproj.io
+      kind: Application
+      jqPathExpressions:
+        - '.metadata.finalizers[] | select(startswith("pre-delete-finalizer.argocd.argoproj.io"))'
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    # keep the ignored finalizers on sync instead of stripping them
+    syncOptions:
+      - RespectIgnoreDifferences=true
