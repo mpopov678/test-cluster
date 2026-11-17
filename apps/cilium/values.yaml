@@ -31,6 +31,31 @@ socketLB:
 bpf:
   lbAlgorithmAnnotation: true
 
+# Metrics: the chart's ServiceMonitors are converted by the VictoriaMetrics operator.
+# Dashboards go to `monitoring`: Grafana's sidecar only watches its own namespace.
+
+# cilium-agent metrics (:9962 on each node)
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+dashboards:
+  enabled: true
+  namespace: monitoring
+
+operator:
+  prometheus:
+    serviceMonitor:
+      enabled: true
+  dashboards:
+    enabled: true
+    namespace: monitoring
+
+envoy:
+  prometheus:
+    serviceMonitor:
+      enabled: true
+
 hubble:
   tls:
     auto:
@@ -38,3 +63,24 @@ hubble:
       # would mint a new CA and certs. certgen reuses the existing cilium-ca Secret and
       # reissues the Hubble certs from it (Job now, CronJob every 4 months).
       method: cronJob
+  # flow API across all nodes + web UI (no route: kubectl port-forward svc/hubble-ui)
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+  # Hubble flow metrics (:9965 on each node). Namespace labels feed the chart's
+  # "Hubble / ... (Namespace)" dashboards; workload contexts on flow/icmp show who talks to whom.
+  # No httpV2: needs L7 policies, so the "L7 HTTP" dashboard stays empty.
+  metrics:
+    enabled:
+      - dns:labelsContext=source_namespace,destination_namespace
+      - drop:labelsContext=source_namespace,destination_namespace
+      - tcp:labelsContext=source_namespace,destination_namespace
+      - port-distribution:labelsContext=source_namespace,destination_namespace
+      - icmp:labelsContext=source_namespace,destination_namespace;sourceContext=workload-name|reserved-identity;destinationContext=workload-name|reserved-identity
+      - flow:labelsContext=source_namespace,destination_namespace;sourceContext=workload-name|reserved-identity;destinationContext=workload-name|reserved-identity
+    serviceMonitor:
+      enabled: true
+    dashboards:
+      enabled: true
+      namespace: monitoring
