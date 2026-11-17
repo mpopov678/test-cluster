@@ -87,3 +87,24 @@ spec:
   podMetricsEndpoints:
     - port: metrics
       path: /stats/prometheus
+---
+# Proxmox Ceph: mgr prometheus module (:9283) on every Ceph host. Only the active
+# mgr serves metrics; standbys answer /metrics with an empty 200 (stay up=1).
+# Constant instance label keeps series continuous across mgr failovers;
+# honorLabels keeps the per-OSD `instance` (host) label on ceph_disk_occupation.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMStaticScrape
+metadata:
+  name: ceph
+  namespace: monitoring
+spec:
+  jobName: ceph
+  targetEndpoints:
+    - targets:
+        - 192.168.88.5:9283
+        - 192.168.88.6:9283
+        - 192.168.88.7:9283
+      honorLabels: true
+      relabelConfigs:
+        - targetLabel: instance
+          replacement: ceph
