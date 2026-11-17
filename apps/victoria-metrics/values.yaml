@@ -84,6 +84,8 @@ grafana:
     dashboards:
       # chart default; the stack's /var/lib/grafana/dashboards hides the gnetId downloads
       folder: /tmp/dashboards
+      # gateway-addons-helm can only put its dashboard ConfigMap in its release namespace
+      searchNamespace: monitoring,envoy-gateway-system
   # Grafana.com dashboards for apps whose charts ship none (downloaded at pod start;
   # all use a datasource variable that defaults to the VictoriaMetrics datasource)
   dashboardProviders:

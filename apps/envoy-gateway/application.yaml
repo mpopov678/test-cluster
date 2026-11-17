@@ -26,6 +26,30 @@ spec:
       helm:
         valueFiles:
           - $values/apps/envoy-gateway/values.yaml
+    # Grafana dashboards only (ConfigMap grafana-dashboards, picked up by the
+    # victoria-metrics Grafana sidecar); every bundled subchart switched off
+    - repoURL: docker.io/envoyproxy
+      chart: gateway-addons-helm
+      targetRevision: v1.9.3
+      helm:
+        valuesObject:
+          dashboard:
+            labels:
+              grafana_dashboard: "1"
+          grafana:
+            enabled: false
+          prometheus:
+            enabled: false
+          loki:
+            enabled: false
+          tempo:
+            enabled: false
+          fluent-bit:
+            enabled: false
+          alloy:
+            enabled: false
+          opentelemetry-collector:
+            enabled: false
     - repoURL: https://github.com/mpopov678/test-cluster.git
       targetRevision: main
       ref: values
