@@ -1,0 +1,40 @@
+# Helm values for cilium 1.20.2 (release "cilium", ns kube-system).
+# Installed by hand with Helm 2026-10-01, adopted by Argo CD 2026-11-17: these are the
+# release's user-supplied values at adoption, plus the Hubble TLS method below.
+
+k8sServiceHost: 192.168.88.100 # kube-vip API VIP
+k8sServicePort: 6443
+k8sClientRateLimit:
+  qps: 10
+  burst: 100
+
+kubeProxyReplacement: true
+
+ipam:
+  mode: cluster-pool
+  operator:
+    clusterPoolIPv4PodCIDRList:
+      - 10.244.0.0/16
+
+l2announcements:
+  enabled: true
+
+# Envoy Gateway serves Gateway API since 2026-11-12
+gatewayAPI:
+  enabled: false
+  enableAlpn: true
+  enableAppProtocol: true
+
+# The chart forces these to true only while gatewayAPI is enabled; keep them on
+socketLB:
+  hostNamespaceOnly: true
+bpf:
+  lbAlgorithmAnnotation: true
+
+hubble:
+  tls:
+    auto:
+      # "helm" (the default) builds the CA via lookup, which Argo CD can't do: every render
+      # would mint a new CA and certs. certgen reuses the existing cilium-ca Secret and
+      # reissues the Hubble certs from it (Job now, CronJob every 4 months).
+      method: cronJob
